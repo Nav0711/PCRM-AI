@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap');
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 220 40% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 13%;
+
+    --primary: 220 55% 22%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 25% 93%;
+    --secondary-foreground: 220 40% 13%;
+
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 40 90% 50%;
+    --accent-foreground: 220 40% 13%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 25% 88%;
+    --input: 214 25% 88%;
+    --ring: 220 55% 22%;
+
+    --radius: 0.5rem;
+
+    /* Status colors */
+    --status-new: 220 10% 58%;
+    --status-in-progress: 210 80% 52%;
+    --status-awaiting: 33 90% 55%;
+    --status-completed: 152 60% 40%;
+    --status-rejected: 0 72% 51%;
+
+    /* Sidebar */
+    --sidebar-background: 220 55% 18%;
+    --sidebar-foreground: 210 30% 90%;
+    --sidebar-primary: 40 90% 50%;
+    --sidebar-primary-foreground: 220 40% 13%;
+    --sidebar-accent: 220 50% 26%;
+    --sidebar-accent-foreground: 210 30% 95%;
+    --sidebar-border: 220 45% 28%;
+    --sidebar-ring: 40 90% 50%;
+
+    /* Extra tokens */
+    --hero-gradient: linear-gradient(135deg, hsl(220 55% 22%), hsl(220 55% 32%));
+    --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+    --card-shadow-hover: 0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 40 90% 50%;
+    --primary-foreground: 220 40% 13%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 40 90% 50%;
+    --accent-foreground: 220 40% 13%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 40 90% 50%;
+    --sidebar-background: 222 47% 6%;
+    --sidebar-foreground: 210 30% 90%;
+    --sidebar-primary: 40 90% 50%;
+    --sidebar-primary-foreground: 220 40% 13%;
+    --sidebar-accent: 217 33% 20%;
+    --sidebar-accent-foreground: 210 30% 95%;
+    --sidebar-border: 217 33% 20%;
+    --sidebar-ring: 40 90% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .stat-card {
+    @apply bg-card rounded-lg border p-5 transition-shadow duration-200;
+    box-shadow: var(--card-shadow);
+  }
+  .stat-card:hover {
+    box-shadow: var(--card-shadow-hover);
+  }
+  .status-new {
+    @apply bg-muted text-muted-foreground;
+  }
+  .status-in-progress {
+    background-color: hsl(var(--status-in-progress) / 0.12);
+    color: hsl(var(--status-in-progress));
+  }
+  .status-awaiting {
+    background-color: hsl(var(--status-awaiting) / 0.12);
+    color: hsl(var(--status-awaiting));
+  }
+  .status-completed {
+    background-color: hsl(var(--status-completed) / 0.12);
+    color: hsl(var(--status-completed));
+  }
+  .status-rejected {
+    background-color: hsl(var(--status-rejected) / 0.12);
+    color: hsl(var(--status-rejected));
+  }
+  .hero-section {
+    background: var(--hero-gradient);
+  }
+  .typing-dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60;
+    animation: typing-bounce 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
