@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 from utils.database import get_db
@@ -8,6 +8,8 @@ from models.user import User
 from schemas.complaint import ComplaintCreate, ComplaintResponse
 import uuid
 from datetime import datetime
+import os
+import shutil
 
 router = APIRouter(prefix="/api/v1/complaints", tags=["complaints"])
 
@@ -24,6 +26,17 @@ def create_complaint(complaint: ComplaintCreate, db: Session = Depends(get_db)):
     db.refresh(new_complaint)
     # TODO: Trigger Celery task for AI classification here
     return new_complaint
+
+@router.post("/upload")
+def upload_image(file: UploadFile = File(...)):
+    file_ext = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4().hex}.{file_ext}"
+    file_path = f"uploads/{filename}"
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"photo_url": f"/uploads/{filename}"}
 
 @router.get("", response_model=List[ComplaintResponse])
 def get_complaints(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

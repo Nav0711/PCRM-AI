@@ -2,13 +2,17 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 import { StatCard } from '@/components/StatCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { mockTasks, mockUpdates, WARDS, CATEGORIES } from '@/data/mock';
-import { CheckCircle2, Clock, AlertCircle, Users, MapPin, Calendar, Filter, BadgeCheck } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, Users, MapPin, Calendar, Filter, BadgeCheck, FileText } from 'lucide-react';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ComplaintForm } from "@/components/ComplaintForm";
 
 const Index = () => {
   const [wardFilter, setWardFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const completed = mockTasks.filter(t => t.status === 'completed').length;
   const inProgress = mockTasks.filter(t => t.status === 'in-progress').length;
@@ -26,15 +30,46 @@ const Index = () => {
 
   return (
     <PublicLayout>
+      {/* Hero section */}
+      <section className="hero-section text-white py-20 lg:py-32">
+        <div className="animated-blob bg-sidebar-ring/40 w-96 h-96 rounded-full top-0 left-10 pt-10"></div>
+        <div className="animated-blob bg-secondary/20 w-80 h-80 rounded-full bottom-0 right-20" style={{ animationDelay: '2s' }}></div>
+        
+        <div className="container mx-auto px-4 relative z-10 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fade-in text-white/95">
+            Your Voice, <span className="text-accent underline decoration-4 underline-offset-8">Amplified.</span>
+          </h1>
+          <p className="text-lg md:text-xl relative z-10 mb-10 max-w-2xl mx-auto opacity-90 text-zinc-100 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            Directly connect with your local representative. Report issues, track progress, and build a better community together.
+          </p>
+          
+          <div className="animate-fade-in flex justify-center pb-8" style={{ animationDelay: '0.2s' }}>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="lg" className="h-14 px-8 text-lg font-semibold shadow-xl hover:scale-105 transition-transform bg-accent text-accent-foreground border-border">
+                  <FileText className="mr-2 h-5 w-5" />
+                  File a Complaint
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] glass-panel max-h-[90vh] overflow-y-auto text-foreground">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold">Submit a Grievance</DialogTitle>
+                </DialogHeader>
+                <ComplaintForm onSuccess={() => setIsDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </section>
+
       {/* Hero stats */}
-      <section className="bg-secondary/50 border-b">
-        <div className="container mx-auto px-4 py-8">
-          <h2 className="text-2xl font-bold mb-6">Constituency at a Glance</h2>
+      <section className="bg-background relative -mt-8 z-20">
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Works Completed" value={completed} icon={CheckCircle2} />
-            <StatCard title="In Progress" value={inProgress} icon={Clock} />
-            <StatCard title="Pending Approval" value={pending} icon={AlertCircle} />
-            <StatCard title="Total Projects" value={total} icon={Users} />
+            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}><StatCard title="Works Completed" value={completed} icon={CheckCircle2} /></div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}><StatCard title="In Progress" value={inProgress} icon={Clock} /></div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}><StatCard title="Pending Approval" value={pending} icon={AlertCircle} /></div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}><StatCard title="Total Projects" value={total} icon={Users} /></div>
           </div>
         </div>
       </section>

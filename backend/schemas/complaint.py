@@ -9,7 +9,7 @@ class ComplaintCreate(BaseModel):
     channel: str = "web"
     raw_text: str
     ward_id: Optional[UUID] = None
-    constituency_id: UUID
+    constituency_id: Optional[UUID] = None
     photo_url: Optional[str] = None
 
 class ComplaintResponse(BaseModel):

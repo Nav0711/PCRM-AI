@@ -22,7 +22,7 @@ class Complaint(Base):
     status = Column(String(30), default="New")
     assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     ward_id = Column(UUID(as_uuid=True), ForeignKey("wards.id"))
-    constituency_id = Column(UUID(as_uuid=True), ForeignKey("constituencies.id"), nullable=False)
+    constituency_id = Column(UUID(as_uuid=True), ForeignKey("constituencies.id"), nullable=True)
     language = Column(String(30), default="Hindi")
     tags = Column(ARRAY(String))
     ai_draft_reply = Column(Text)
