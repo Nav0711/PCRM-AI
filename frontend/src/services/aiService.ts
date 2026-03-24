@@ -11,6 +11,26 @@ export interface ChatMessage {
 // Simulated delay for mock API responses
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+/**
+ * Beautify and clean AI response text
+ * - Removes asterisks and markdown formatting
+ * - Cleans up excess whitespace
+ * - Improves readability
+ */
+export function beautifyAIResponse(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Remove bold markers (**)
+    .replace(/\*\*/g, '')
+    // Remove single asterisks (*)
+    .replace(/\*/g, '')
+    // Clean up excessive newlines (more than 2)
+    .replace(/\n{3,}/g, '\n\n')
+    // Trim leading/trailing whitespace
+    .trim();
+}
+
 function buildSystemContext(): string {
   const total = mockTasks.length;
   const inProgress = mockTasks.filter(t => t.status === 'in-progress');
@@ -69,6 +89,7 @@ function getDefaultResponse(message: string, detailed = false): string {
  */
 export async function sendChatMessage(
   messages: ChatMessage[],
+  queryType: string = 'general',
   _context?: Record<string, unknown>
 ): Promise<{ reply: string }> {
   try {
@@ -91,22 +112,22 @@ export async function sendChatMessage(
     const response = await apiClient.sendCopilotMessage(
       messageContent,
       historyWithSystem,
-      'general'
+      queryType
     );
 
-    if (response.data?.response) {
-      return { reply: response.data.response };
+    if ((response.data as any)?.response) {
+      return { reply: beautifyAIResponse((response.data as any).response) };
     }
 
     // Fallback to mock response if API fails
     await delay(1200 + Math.random() * 800);
-    return { reply: getDefaultResponse(messageContent, wantsDetail) };
+    return { reply: beautifyAIResponse(getDefaultResponse(messageContent, wantsDetail)) };
   } catch (error) {
     console.error('Chat error:', error);
     await delay(1200 + Math.random() * 800);
     const lastMsg = messages[messages.length - 1]?.content || '';
     const wantsDetail = /\b(detail|explain|full|list|elaborate|describe|breakdown|summarize)\b/i.test(lastMsg);
-    return { reply: getDefaultResponse(lastMsg, wantsDetail) };
+    return { reply: beautifyAIResponse(getDefaultResponse(lastMsg, wantsDetail)) };
   }
 }
 
@@ -147,7 +168,7 @@ export async function getAIInsights(
     ],
   };
 
-  return { suggestions: insightsMap[page] || insightsMap['dashboard'] };
+  return { suggestions: insightsMap[page]?.map(s => beautifyAIResponse(s)) || insightsMap['dashboard'].map(s => beautifyAIResponse(s)) };
 }
 
 export async function getTaskAISuggestions(
@@ -185,7 +206,7 @@ export async function getTaskAISuggestions(
     suggestions.push(`This task is progressing normally at ${task.progress}%.`);
   }
 
-  return { suggestions };
+  return { suggestions: suggestions.map(s => beautifyAIResponse(s)) };
 }
 
 export async function getApprovalAIReview(
@@ -194,7 +215,7 @@ export async function getApprovalAIReview(
   await delay(1000 + Math.random() * 500);
 
   const task = mockTasks.find(t => t.id === taskId);
-  if (!task) return { review: 'Task not found.' };
+  if (!task) return { review: beautifyAIResponse('Task not found.') };
 
   const worker = mockWorkers.find(w => w.id === task.assignedWorker);
   const completionRate = worker
@@ -219,7 +240,7 @@ export async function getApprovalAIReview(
     review += `Review carefully — worker's completion rate (${completionRate}%) suggests some previous issues. Verify proof images if available.`;
   }
 
-  return { review };
+  return { review: beautifyAIResponse(review) };
 }
 
 
