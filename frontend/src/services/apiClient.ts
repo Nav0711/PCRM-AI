@@ -60,29 +60,35 @@ class ApiClient {
    * Login with phone or email
    */
   async login(username: string, password: string) {
-    const params = new URLSearchParams();
-    params.append('username', username);
-    params.append('password', password);
+    try {
+      const params = new URLSearchParams();
+      params.append('username', username);
+      params.append('password', password);
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: params.toString(),
-      credentials: 'include',
-    });
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
+      });
 
-    if (!response.ok) {
-      try {
-        const error = await response.json();
-        throw new Error(error.detail || error.message || `Login failed with status ${response.status}`);
-      } catch {
-        throw new Error(`Login failed with status ${response.status}`);
+      if (!response.ok) {
+        try {
+          const error = await response.json();
+          throw new Error(error.detail || error.message || `Login failed with status ${response.status}`);
+        } catch (e) {
+          throw new Error(`Login failed with status ${response.status}`);
+        }
       }
-    }
 
-    return await response.json();
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Network error or CORS issue';
+      console.error('Login error details:', { message, apiUrl: API_BASE_URL });
+      throw error;
+    }
   }
 
   /**
