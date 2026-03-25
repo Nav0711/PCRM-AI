@@ -7,7 +7,6 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-
 export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
@@ -39,7 +38,7 @@ class ApiClient {
         options.body = JSON.stringify(body);
       }
 
-      const response = await fetchWithTimeout(url, options);
+      const response = await fetch(url, options);
       
       if (!response.ok) {
         let errorData: any = {};
@@ -81,7 +80,7 @@ class ApiClient {
       const url = `${API_BASE_URL}/api/v1/auth/login`;
       console.log(`[LOGIN] Attempting login for user: ${username} at ${url}`);
 
-      const response = await fetchWithTimeout(url, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
