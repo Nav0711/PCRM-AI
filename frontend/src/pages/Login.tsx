@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Building2, Loader2 } from 'lucide-react';
+import { Building2, Loader2, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -15,18 +16,23 @@ const Login = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setLoadingMessage('Connecting to server...');
+    
     try {
       const success = await login(username, password);
       if (success) {
-        // User role is determined from API response and stored in context
-        navigate('/politician/dashboard');
+        setLoadingMessage('Login successful, redirecting...');
+        setTimeout(() => navigate('/politician/dashboard'), 500);
       } else {
-        setError('Invalid credentials');
+        setError('Invalid credentials. Please try again.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+      const errorMsg = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setError(errorMsg);
+      console.error('Login error:', errorMsg);
     } finally {
       setLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -39,6 +45,13 @@ const Login = () => {
           </div>
           <h1 className="text-2xl font-bold">Constituency Work Portal</h1>
           <p className="text-sm text-muted-foreground mt-1">Sign in to manage constituency work</p>
+        </div>
+
+        {/* Debug Info - Backend URL */}
+        <div className="bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-3 mb-4 text-xs">
+          <p className="text-gray-600 dark:text-gray-400">
+            API: <span className="font-mono text-gray-800 dark:text-gray-200">{import.meta.env.VITE_API_URL || 'http://localhost:8000'}</span>
+          </p>
         </div>
 
         {/* Demo Credentials Box */}
@@ -73,6 +86,7 @@ const Login = () => {
                 placeholder="Enter your phone number or email"
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 required
+                disabled={loading}
               />
             </div>
             <div>
@@ -84,10 +98,23 @@ const Login = () => {
                 placeholder="Enter your password"
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 required
+                disabled={loading}
               />
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && (
+              <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
+            {loading && loadingMessage && (
+              <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                <Loader2 className="h-4 w-4 text-blue-600 dark:text-blue-400 animate-spin" />
+                <p className="text-sm text-blue-600 dark:text-blue-400">{loadingMessage}</p>
+              </div>
+            )}
 
             <button
               type="submit"
@@ -95,7 +122,7 @@ const Login = () => {
               className="w-full bg-primary text-primary-foreground py-2.5 rounded-md font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 

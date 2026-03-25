@@ -7,6 +7,7 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+
 export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
@@ -38,17 +39,25 @@ class ApiClient {
         options.body = JSON.stringify(body);
       }
 
-      const response = await fetch(url, options);
-      const data = await response.json();
-
+      const response = await fetchWithTimeout(url, options);
+      
       if (!response.ok) {
-        throw new Error(data.detail || data.message || 'API request failed');
+        let errorData: any = {};
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          // Response wasn't JSON
+        }
+        throw new Error(errorData.detail || errorData.message || `API request failed with status ${response.status}`);
       }
 
+      const data = await response.json();
       return { data, status: response.status };
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error(`[API] ${method} ${endpoint} failed:`, message);
       return {
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        error: message,
         status: 0,
       };
     }
@@ -61,11 +70,18 @@ class ApiClient {
    */
   async login(username: string, password: string) {
     try {
+      if (!username || !password) {
+        throw new Error('Username and password are required');
+      }
+
       const params = new URLSearchParams();
       params.append('username', username);
       params.append('password', password);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      const url = `${API_BASE_URL}/api/v1/auth/login`;
+      console.log(`[LOGIN] Attempting login for user: ${username} at ${url}`);
+
+      const response = await fetchWithTimeout(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -74,19 +90,26 @@ class ApiClient {
       });
 
       if (!response.ok) {
+        let errorDetail = `HTTP ${response.status}`;
         try {
-          const error = await response.json();
-          throw new Error(error.detail || error.message || `Login failed with status ${response.status}`);
+          const errorData = await response.json();
+          errorDetail = errorData.detail || errorData.message || errorDetail;
         } catch (e) {
-          throw new Error(`Login failed with status ${response.status}`);
+          // Response wasn't JSON
         }
+        throw new Error(`Login failed: ${errorDetail}`);
       }
 
       const data = await response.json();
+      console.log('[LOGIN] Success:', { id: data.user?.id, role: data.user?.role });
       return data;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Network error or CORS issue';
-      console.error('Login error details:', { message, apiUrl: API_BASE_URL });
+      console.error('[LOGIN] Error:', {
+        message,
+        apiUrl: API_BASE_URL,
+        timestamp: new Date().toISOString(),
+      });
       throw error;
     }
   }

@@ -16,13 +16,13 @@ allowed_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
-    "https://pcrm-ai-wine.vercel.app",  # Update with your actual Vercel domain
-    # "https://pcrm-ai-production-8f7a.up.railway.app",
+    "https://pcrm-ai-wine.vercel.app",  # production frontend
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # allow Vercel preview deploys
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept"],
