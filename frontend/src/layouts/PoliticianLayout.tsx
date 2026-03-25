@@ -27,6 +27,7 @@ export function PoliticianLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInitialMessage, setChatInitialMessage] = useState<string | undefined>();
+  const isDashboard = location.pathname === '/politician/dashboard';
 
   const handleLogout = () => {
     logout();
@@ -108,7 +109,7 @@ export function PoliticianLayout({ children }: { children: ReactNode }) {
           </main>
         </div>
 
-        <FloatingChatButton onClick={() => openChat()} />
+        {!isDashboard && <FloatingChatButton onClick={() => openChat()} />}
         <ChatDrawer
           open={chatOpen}
           onClose={() => { setChatOpen(false); setChatInitialMessage(undefined); }}

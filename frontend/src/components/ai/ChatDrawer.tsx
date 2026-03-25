@@ -29,19 +29,21 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const initialSent = useRef(false);
+  const lastInitialMessage = useRef<string | undefined>();
 
   const [briefing, setBriefing] = useState<any>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
 
   useEffect(() => {
-    if (open && initialMessage && !initialSent.current) {
-      initialSent.current = true;
+    if (!open) {
+      lastInitialMessage.current = undefined;
+      return;
+    }
+
+    if (initialMessage && initialMessage !== lastInitialMessage.current) {
+      lastInitialMessage.current = initialMessage;
       setActiveTab('chat');
       handleSend(initialMessage);
-    }
-    if (!open) {
-      initialSent.current = false;
     }
   }, [open, initialMessage]);
 

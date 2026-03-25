@@ -60,18 +60,26 @@ class ApiClient {
    * Login with phone or email
    */
   async login(username: string, password: string) {
-    const formData = new FormData();
-    formData.append('username', username);
-    formData.append('password', password);
+    const params = new URLSearchParams();
+    params.append('username', username);
+    params.append('password', password);
 
     const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+      credentials: 'include',
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Login failed');
+      try {
+        const error = await response.json();
+        throw new Error(error.detail || error.message || `Login failed with status ${response.status}`);
+      } catch {
+        throw new Error(`Login failed with status ${response.status}`);
+      }
     }
 
     return await response.json();
