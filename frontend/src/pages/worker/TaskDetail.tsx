@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { WorkerLayout } from '@/layouts/WorkerLayout';
 import { mockTasks } from '@/data/mock';
@@ -10,18 +10,75 @@ import { MapPin, Calendar, ArrowLeft, Play, CheckCircle2, Clock, MessageSquare }
 import { toast } from 'sonner';
 import { Task, ActivityLogEntry, FileAttachment } from '@/types';
 import { useAIChat } from '@/contexts/AIChatContext';
+import { apiClient } from '@/services/apiClient';
 
 const TaskDetail = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
   const { openChat } = useAIChat();
-  const taskData = mockTasks.find(t => t.id === taskId);
-
-  const [task, setTask] = useState<Task | null>(taskData ? { ...taskData } : null);
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState('');
-  const [progress, setProgress] = useState(task?.progress || 0);
-  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>(task?.activityLog || []);
+  const [progress, setProgress] = useState(0);
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [files, setFiles] = useState<FileAttachment[]>([]);
+
+  useEffect(() => {
+    const loadTask = async () => {
+      try {
+        if (taskId && taskId.length > 5) {
+          const res = await apiClient.getComplaintDetail(taskId);
+          if (res.data) {
+             const c = res.data as any;
+             const loadedTask = {
+               id: c.id,
+               title: c.ticket_id,
+               description: c.summary || c.raw_text,
+               status: c.status?.toLowerCase() || 'new',
+               progress: c.progress || 0,
+               ward: c.ward_id || 'Unknown',
+               location: c.location || 'Unknown',
+               deadline: c.deadline || '2026-04-01',
+               priority: 'medium' as const,
+               activityLog: c.activity_log || [],
+               assignedWorker: c.assigned_to,
+               assignedWorkerName: 'You',
+               category: c.category || 'Maintenance',
+               createdAt: c.created_at || new Date().toISOString(),
+               updatedAt: c.updated_at || new Date().toISOString(),
+               images: c.images || [],
+               publishedToPublic: false
+             };
+             setTask(loadedTask);
+             setProgress(loadedTask.progress || 0);
+             setActivityLog(loadedTask.activityLog);
+          }
+        } else {
+          const taskData = mockTasks.find(t => t.id === taskId);
+          if (taskData) {
+            setTask({ ...taskData });
+            setProgress(taskData.progress || 0);
+            setActivityLog(taskData.activityLog || []);
+          }
+        }
+      } catch (e) {
+         console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadTask();
+  }, [taskId]);
+
+  if (loading) {
+    return (
+      <WorkerLayout>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground animate-pulse">Loading task details...</p>
+        </div>
+      </WorkerLayout>
+    );
+  }
 
   if (!task) {
     return (
@@ -64,9 +121,20 @@ const TaskDetail = () => {
     toast.success(`Update added at ${progress}%`);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!notes.trim()) {
       toast.error('Please add completion notes');
+      return;
+    }
+    try {
+      if (task.id && task.id.length > 5) {
+        await apiClient.updateComplaint(task.id, {
+          status: 'Awaiting Approval'
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to submit approval appeal');
       return;
     }
     const entry: ActivityLogEntry = {
@@ -79,7 +147,7 @@ const TaskDetail = () => {
     setTask({ ...task, status: 'awaiting-approval', progress: 100 });
     setProgress(100);
     setNotes('');
-    toast.success('Marked as completed. Awaiting politician approval.');
+    toast.success('Task appealed for approval. Awaiting politician review.');
   };
 
   const canStart = task.status === 'new' || task.status === 'rejected';
@@ -175,7 +243,7 @@ const TaskDetail = () => {
               </button>
               <button onClick={handleComplete} className="flex-1 py-2.5 rounded-md font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-primary-foreground" style={{ backgroundColor: 'hsl(152, 60%, 40%)' }}>
                 <CheckCircle2 className="h-4 w-4" />
-                Mark Complete
+                Appeal for approval
               </button>
             </div>
             <div className="flex flex-wrap gap-2">

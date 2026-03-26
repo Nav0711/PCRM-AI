@@ -4,6 +4,7 @@ import { POLITICIAN } from '@/data/mock';
 import { Menu, X, Landmark } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -39,15 +40,19 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 {l.label}
               </a>
             ))}
+            <ThemeToggle />
             <Link to="/login" className="text-sm font-semibold bg-primary text-primary-foreground px-5 py-2 rounded-xl hover:bg-primary/90 transition-all shadow-sm hover:shadow-md">
               Login
             </Link>
           </nav>
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <button className="p-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile nav */}

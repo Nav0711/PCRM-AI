@@ -5,15 +5,48 @@ import { PriorityBadge } from '@/components/PriorityBadge';
 import { MapPin, Calendar, ChevronRight, MessageCircle, CheckCircle2, Clock3, Rocket } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAIChat } from '@/contexts/AIChatContext';
+import { apiClient } from '@/services/apiClient';
+import { useState, useEffect } from 'react';
+import { Task } from '@/types';
 
 // Worker dashboard shows assigned tasks and AI shortcuts tailored to worker workflows.
 
 const WorkerDashboard = () => {
   const { openChat } = useAIChat();
-  // In real app, filter by logged-in worker
-  const workerTasks = mockTasks.filter(t => t.assignedWorker === 'w1');
+  const [workerTasks, setWorkerTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await apiClient.getComplaints();
+        const liveTasks = ((res.data as any[]) || []).map((c: any) => ({
+             id: c.id,
+             title: c.ticket_id,
+             description: c.summary || c.raw_text,
+             status: c.status?.toLowerCase() || 'new',
+             progress: c.progress || 0,
+             ward: c.ward_id || 'Unknown',
+             location: c.location || 'Unknown',
+             deadline: c.deadline || '2026-04-01',
+             priority: 'medium' as const,
+             assignedWorker: c.assigned_to,
+             assignedWorkerName: 'You',
+             category: c.category || 'Maintenance',
+             createdAt: c.created_at || new Date().toISOString(),
+             updatedAt: c.updated_at || new Date().toISOString(),
+             images: c.images || [],
+             publishedToPublic: false
+        }));
+        setWorkerTasks([...liveTasks, ...mockTasks.filter(t => t.assignedWorker === 'w1')]);
+      } catch (err) {
+        setWorkerTasks(mockTasks.filter(t => t.assignedWorker === 'w1'));
+      }
+    };
+    fetchTasks();
+  }, []);
+
   const inProgress = workerTasks.filter(t => t.status === 'in-progress');
-  const awaitingApproval = workerTasks.filter(t => t.status === 'awaiting-approval');
+  const awaitingApproval = workerTasks.filter(t => t.status === 'awaiting-approval' || (t.status as string) === 'awaiting approval');
   const dueSoon = workerTasks.filter(t => t.status !== 'completed').slice(0, 3);
 
   const launchAI = (message: string) => {

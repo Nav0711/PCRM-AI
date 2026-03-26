@@ -90,7 +90,7 @@ function getDefaultResponse(message: string, detailed = false): string {
 export async function sendChatMessage(
   messages: ChatMessage[],
   queryType: string = 'general',
-  _context?: Record<string, unknown>
+  userRole: string = 'Politician'
 ): Promise<{ reply: string }> {
   try {
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
@@ -100,9 +100,13 @@ export async function sendChatMessage(
     const wantsDetail = /\b(detail|explain|full|list|elaborate|describe|breakdown|summarize)\b/i.test(messageContent);
 
     // System instruction for conciseness injected as history prefix
+    const roleString = userRole === 'FieldWorker' 
+      ? 'a field worker managing assigned tasks and field operations' 
+      : 'a politician managing constituency complaints and approvals';
+    
     const systemInstruction = wantsDetail
-      ? 'You are a helpful AI assistant for a politician dashboard. The user is requesting detailed information — provide a thorough, structured response.'
-      : 'You are a helpful AI assistant for a politician dashboard. Be concise and conversational. Reply in 2-4 short sentences unless the user asks for details or uses words like explain, list, or describe. Do not include unsolicited bullet points or headers.';
+      ? `You are a helpful AI assistant acting as a Copilot for ${roleString}. The user is requesting detailed information — provide a thorough, structured response. Use your predefined context about PCRM and the user's role to assist them.`
+      : `You are a helpful AI assistant acting as a Copilot for ${roleString}. Be concise and conversational. Reply in 2-4 short sentences unless the user asks for details or uses words like explain, list, or describe. Do not include unsolicited bullet points or headers. Base answers on their role.`;
 
     const historyWithSystem = [
       { role: 'assistant' as const, content: systemInstruction },

@@ -5,10 +5,43 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
 import { MapPin, Calendar, ChevronRight, UploadCloud, CheckCircle2 } from 'lucide-react';
 import { useAIChat } from '@/contexts/AIChatContext';
+import { apiClient } from '@/services/apiClient';
+import { useState, useEffect } from 'react';
+import { Task } from '@/types';
 
 const AssignedWork = () => {
   const { openChat } = useAIChat();
-  const workerTasks = mockTasks.filter(t => t.assignedWorker === 'w1');
+  const [workerTasks, setWorkerTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await apiClient.getComplaints();
+        const liveTasks = ((res.data as any[]) || []).filter((c: any) => c.status?.toLowerCase() !== 'done').map((c: any) => ({
+             id: c.id,
+             title: c.ticket_id,
+             description: c.summary || c.raw_text,
+             status: c.status?.toLowerCase() || 'new',
+             progress: c.progress || 0,
+             ward: c.ward_id || 'Unknown',
+             location: c.location || 'Unknown',
+             deadline: c.deadline || '2026-04-01',
+             priority: 'medium' as const,
+             assignedWorker: c.assigned_to,
+             assignedWorkerName: 'You',
+             category: c.category || 'Maintenance',
+             createdAt: c.created_at || new Date().toISOString(),
+             updatedAt: c.updated_at || new Date().toISOString(),
+             images: c.images || [],
+             publishedToPublic: false
+        }));
+        setWorkerTasks([...liveTasks, ...mockTasks.filter(t => t.assignedWorker === 'w1')]);
+      } catch (err) {
+        setWorkerTasks(mockTasks.filter(t => t.assignedWorker === 'w1'));
+      }
+    };
+    fetchTasks();
+  }, []);
 
   const launchApprovalHelper = (taskId: string) => {
     const task = workerTasks.find(t => t.id === taskId);

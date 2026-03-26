@@ -7,12 +7,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { POLITICIAN } from '@/data/mock';
 import { apiClient } from '@/services/apiClient';
 
-const STARTER_CHIPS = [
-  { emoji: '🎤', text: 'Draft a speech on accomplishments' },
-  { emoji: '📰', text: 'Draft a media response' },
-  { emoji: '📊', text: 'Constituency Data Overview' },
-  { emoji: '🔴', text: 'Which tasks are most overdue?' },
-];
+const getStarterChips = (role?: string) => {
+  if (role === 'FieldWorker') {
+    return [
+      { emoji: '📝', text: 'Draft a daily progress report' },
+      { emoji: '💬', text: 'Compose a message to supervisor' },
+      { emoji: '📋', text: 'Summarize my assigned tasks' },
+      { emoji: '❓', text: 'How do I handle a delayed task?' },
+    ];
+  }
+  return [
+    { emoji: '🎤', text: 'Draft a speech on accomplishments' },
+    { emoji: '📰', text: 'Draft a media response' },
+    { emoji: '📊', text: 'Constituency Data Overview' },
+    { emoji: '🔴', text: 'Which tasks are most overdue?' },
+  ];
+};
 
 interface ChatDrawerProps {
   open: boolean;
@@ -93,7 +103,7 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
     try {
       const res = await apiClient.getTodayBriefing();
       if (res.data) {
-        const briefingData = res.data;
+        const briefingData = res.data as any;
         if (briefingData.briefing?.ai_summary) {
           briefingData.briefing.ai_summary = beautifyAIResponse(briefingData.briefing.ai_summary);
         }
@@ -127,7 +137,7 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
     else if (lowerMsg.includes('data') || lowerMsg.includes('overview') || lowerMsg.includes('stats')) queryType = 'data';
 
     try {
-      const { reply } = await sendChatMessage(newMessages, queryType);
+      const { reply } = await sendChatMessage(newMessages, queryType, user?.role);
       setMessages(prev => [...prev, { role: 'assistant', content: reply, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
     } catch {
       setError('Unable to get a response. Please try again.');
@@ -296,7 +306,7 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 pl-9">
-                    {STARTER_CHIPS.map(chip => (
+                    {getStarterChips(user?.role).map(chip => (
                       <button
                         key={chip.text}
                         onClick={() => handleSend(chip.text)}

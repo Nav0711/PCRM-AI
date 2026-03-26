@@ -6,6 +6,7 @@ import { ClipboardList, ClipboardCheck, UserCog, Menu, LogOut } from 'lucide-rea
 import { cn } from '@/lib/utils';
 import { FloatingChatButton } from '@/components/ai/FloatingChatButton';
 import { ChatDrawer } from '@/components/ai/ChatDrawer';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function WorkerLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
@@ -87,6 +88,7 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
               <h1 className="text-lg md:text-xl font-bold">{navItems.find(i => i.href === location.pathname)?.label || 'Dashboard'}</h1>
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <ThemeToggle />
               <span className="hidden sm:inline">{user?.name}</span>
             </div>
           </header>
