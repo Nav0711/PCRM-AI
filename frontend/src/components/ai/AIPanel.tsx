@@ -41,7 +41,7 @@ export function AIPanel() {
     try {
       const res = await apiClient.getTodayBriefing();
       if (res.data) {
-        const briefingData = res.data;
+        const briefingData = res.data as any;
         if (briefingData.briefing?.ai_summary) {
           briefingData.briefing.ai_summary = beautifyAIResponse(briefingData.briefing.ai_summary);
         }
@@ -94,7 +94,7 @@ export function AIPanel() {
   const politicianName = user?.name || POLITICIAN.name;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6 h-[calc(100vh-14rem)]">
+    <div className="grid lg:grid-cols-2 gap-6 h-full min-h-0 overflow-hidden">
       {/* Left Column: Morning Briefing */}
       <div className="flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
         <div className="p-5 border-b bg-muted/30">
@@ -116,25 +116,6 @@ export function AIPanel() {
             </div>
           ) : briefing ? (
             <div className="space-y-6">
-              {/* Stat Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-background rounded-lg border p-4 shadow-sm hover:shadow transition-shadow">
-                  <div className="text-muted-foreground text-xs font-medium uppercase tracking-wider mb-2">Total Open</div>
-                  <div className="text-3xl font-bold">{briefing.stats?.total_open || 0}</div>
-                </div>
-                <div className="bg-background rounded-lg border p-4 shadow-sm hover:shadow transition-shadow">
-                  <div className="text-muted-foreground text-xs font-medium uppercase tracking-wider mb-2">Resolved Today</div>
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">{briefing.stats?.resolved_today || 0}</div>
-                </div>
-                <div className="bg-background rounded-lg border p-4 shadow-sm hover:shadow transition-shadow">
-                  <div className="text-muted-foreground text-xs font-medium uppercase tracking-wider mb-2">New Since Yesterday</div>
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{briefing.stats?.new_since_yesterday || 0}</div>
-                </div>
-                <div className="bg-background rounded-lg border p-4 shadow-sm hover:shadow transition-shadow">
-                  <div className="text-muted-foreground text-xs font-medium uppercase tracking-wider mb-2">SLA Breaches</div>
-                  <div className="text-3xl font-bold text-red-600 dark:text-red-400">{briefing.stats?.sla_breaches || 0}</div>
-                </div>
-              </div>
 
               {/* AI Summary Section */}
               <div className="bg-background rounded-lg border shadow-sm overflow-hidden">
@@ -180,8 +161,8 @@ export function AIPanel() {
           <p className="text-sm text-muted-foreground mt-1">Talk to your constituency data directly</p>
         </div>
 
-        {/* Chat Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-5 bg-background">
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-5">
           {messages.length === 0 && !loading && (
             <div className="space-y-4">
               <div className="flex items-start gap-3">
@@ -242,6 +223,7 @@ export function AIPanel() {
               </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* Input Box */}

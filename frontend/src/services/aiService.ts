@@ -105,7 +105,7 @@ export async function sendChatMessage(
       : 'a politician managing constituency complaints and approvals';
     
     const systemInstruction = wantsDetail
-      ? `You are a helpful AI assistant acting as a Copilot for ${roleString}. The user is requesting detailed information — provide a thorough, structured response. Use your predefined context about PCRM and the user's role to assist them.`
+      ? `You are a helpful AI assistant acting as a Copilot for ${roleString}. The user is requesting detailed information — provide a thorough, structured response. Use your predefined context about PSRM-AI and the user's role to assist them.`
       : `You are a helpful AI assistant acting as a Copilot for ${roleString}. Be concise and conversational. Reply in 2-4 short sentences unless the user asks for details or uses words like explain, list, or describe. Do not include unsolicited bullet points or headers. Base answers on their role.`;
 
     const historyWithSystem = [

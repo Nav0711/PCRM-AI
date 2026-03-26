@@ -169,7 +169,7 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
       <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-[60] lg:bg-transparent lg:backdrop-blur-none" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 z-[61] w-full sm:w-[450px] bg-card border-l shadow-xl flex flex-col animate-in slide-in-from-right duration-200">
+      <div className="fixed inset-y-0 right-0 z-[61] w-full sm:w-[450px] bg-card border-l shadow-xl flex flex-col animate-in slide-in-from-right duration-200 h-screen max-h-screen overflow-hidden">
         {/* Header */}
         <div className="flex flex-col border-b shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center justify-between px-4 py-3 shrink-0">
@@ -217,7 +217,7 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
         </div>
 
         {activeTab === 'briefing' ? (
-          <div className="flex-1 overflow-y-auto p-5 bg-secondary/20">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 bg-secondary/20 min-h-0">
             {briefingLoading ? (
               <div className="flex flex-col space-y-4 items-center justify-center h-full text-muted-foreground">
                 <RefreshCw className="h-8 w-8 animate-spin text-primary/50" />
@@ -292,8 +292,8 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
           </div>
         ) : (
           <>
-            {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Messages - Fixed height with internal scroll */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 min-h-0">
               {messages.length === 0 && !loading && (
                 <div className="space-y-4">
                   <div className="flex items-start gap-2.5">

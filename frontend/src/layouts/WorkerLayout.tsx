@@ -36,8 +36,8 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
     <AIChatProvider value={{ openChat }}>
       <div className="h-screen flex overflow-hidden bg-background">
         {/* Sidebar */}
-        <aside className="hidden md:flex w-64 flex-col border-r bg-card/60 backdrop-blur">
-          <div className="p-5 border-b">
+        <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground relative z-10">
+          <div className="p-5">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
                 <ClipboardList className="h-6 w-6 text-accent-foreground" />
@@ -57,19 +57,19 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
                   to={item.href}
                   className={cn(
                     'flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200',
-                    active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    active ? 'bg-sidebar-primary/10 text-sidebar-primary border border-sidebar-primary/20' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
                   )}
                 >
-                  <item.icon className={cn('h-5 w-5', active ? 'text-primary' : '')} />
+                  <item.icon className={cn('h-5 w-5', active ? 'text-sidebar-primary' : '')} />
                   {item.label}
                 </Link>
               );
             })}
           </nav>
-          <div className="p-4 border-t">
+          <div className="p-4 mt-auto">
             <button
               onClick={() => { logout(); navigate('/login'); }}
-              className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium w-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium w-full text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
             >
               <LogOut className="h-5 w-5" />
               Logout
@@ -80,7 +80,7 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top bar */}
-          <header className="h-16 bg-card/70 backdrop-blur border-b px-4 md:px-8 flex items-center justify-between gap-3 shrink-0">
+          <header className="h-16 bg-transparent px-4 md:px-8 flex items-center justify-between gap-3 shrink-0 pt-4 z-10">
             <div className="flex items-center gap-3">
               <button className="md:hidden p-2 -ml-2 rounded-lg hover:bg-muted" onClick={() => navigate('/worker/dashboard')}>
                 <Menu className="h-5 w-5" />
@@ -93,7 +93,7 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-secondary/30">
+          <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
             {children}
           </main>
         </div>

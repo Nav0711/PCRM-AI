@@ -84,7 +84,7 @@ const Index = () => {
   return (
     <PublicLayout>
       {/* Hero section — Indian Tricolour Gradient */}
-      <section className="relative overflow-hidden bg-sidebar text-white">
+      <section className="relative overflow-hidden bg-background text-foreground">
         {/* Saffron glow top-left */}
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-[#FF9933]/20 blur-[120px] pointer-events-none" />
         {/* Green glow bottom-right */}
@@ -98,7 +98,7 @@ const Index = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs font-semibold tracking-wide mb-8 animate-fade-in backdrop-blur-sm">
               <Shield className="h-3.5 w-3.5 text-[#FF9933]" />
-              <span>Bharat AI — Constituency Transparency Portal</span>
+              <span>PSRM-AI — Constituency Transparency Portal</span>
             </div>
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight animate-fade-in leading-[1.1]">
@@ -136,11 +136,11 @@ const Index = () => {
         </div>
 
         {/* Bottom tricolour fade */}
-        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933]/50 via-white/20 to-[#138808]/50" />
       </section>
 
       {/* Stats section */}
-      <section className="bg-background relative -mt-0 z-20">
+      <section className="bg-transparent relative z-20">
         <div className="container mx-auto px-4 -mt-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
@@ -164,7 +164,7 @@ const Index = () => {
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { icon: Eye, title: 'Full Transparency', desc: 'Track every complaint from submission to resolution in real-time.', color: '#FF9933' },
-            { icon: Shield, title: 'AI-Powered Triage', desc: 'Complaints are automatically categorized and prioritized using Bharat AI.', color: '#000080' },
+            { icon: Shield, title: 'AI-Powered Triage', desc: 'Complaints are automatically categorized and prioritized using PSRM-AI.', color: '#000080' },
             { icon: Megaphone, title: 'Your Voice Matters', desc: 'Every citizen complaint is heard, assigned, and actioned upon.', color: '#138808' },
           ].map((feature, i) => (
             <div key={i} className="stat-card group cursor-default" style={{ animationDelay: `${0.2 * i}s` }}>
@@ -228,7 +228,7 @@ const Index = () => {
           <div className="h-8 w-1 rounded-full bg-[#FF9933]" />
           <h2 className="text-2xl font-bold text-foreground">All Complaints</h2>
         </div>
-        <p className="text-sm text-muted-foreground mb-6 ml-4">Live data from Neon database via Bharat AI backend</p>
+        <p className="text-sm text-muted-foreground mb-6 ml-4">Live data from Neon database via PSRM-AI backend</p>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

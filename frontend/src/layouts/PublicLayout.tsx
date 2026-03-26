@@ -87,7 +87,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               </div>
               <div>
                 <p className="text-sm font-semibold">{POLITICIAN.constituency}</p>
-                <p className="text-xs opacity-60">Transparency Portal — Powered by Bharat AI</p>
+                <p className="text-xs opacity-60">Transparency Portal — Powered by PSRM-AI</p>
               </div>
             </div>
             <div className="flex items-center gap-6 text-xs font-medium opacity-60">

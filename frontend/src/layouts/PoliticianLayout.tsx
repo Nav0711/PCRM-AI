@@ -51,13 +51,13 @@ export function PoliticianLayout({ children }: { children: ReactNode }) {
           'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-sidebar text-sidebar-foreground flex flex-col transition-transform duration-200 lg:translate-x-0 flex-shrink-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}>
-          <div className="p-5 border-b border-sidebar-border">
+          <div className="p-5">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-[#FF9933]/20 flex items-center justify-center border border-[#FF9933]/30">
                 <Landmark className="h-5 w-5 text-[#FF9933]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base font-bold truncate tracking-tight">Bharat AI</p>
+                <p className="text-base font-bold truncate tracking-tight">PSRM-AI</p>
                 <p className="text-xs opacity-60 truncate font-medium">{user?.name || 'Admin Panel'}</p>
               </div>
             </div>
@@ -85,7 +85,7 @@ export function PoliticianLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <div className="p-4 border-t border-sidebar-border mt-auto">
+          <div className="p-4 mt-auto">
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium w-full text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
@@ -96,8 +96,8 @@ export function PoliticianLayout({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <div className="flex-1 flex flex-col min-w-0 bg-secondary/30">
-          <header className="h-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-8 gap-4 shrink-0 z-10">
+        <div className="flex-1 flex flex-col min-w-0 bg-background">
+          <header className="h-20 bg-transparent flex items-center justify-between px-8 gap-4 shrink-0 z-10 pt-4">
             <div className="flex items-center gap-4">
               <button className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-muted" onClick={() => setSidebarOpen(true)}>
                 <Menu className="h-5 w-5" />

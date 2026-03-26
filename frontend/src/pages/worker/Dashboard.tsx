@@ -20,22 +20,22 @@ const WorkerDashboard = () => {
       try {
         const res = await apiClient.getComplaints();
         const liveTasks = ((res.data as any[]) || []).map((c: any) => ({
-             id: c.id,
-             title: c.ticket_id,
-             description: c.summary || c.raw_text,
-             status: c.status?.toLowerCase() || 'new',
-             progress: c.progress || 0,
-             ward: c.ward_id || 'Unknown',
-             location: c.location || 'Unknown',
-             deadline: c.deadline || '2026-04-01',
-             priority: 'medium' as const,
-             assignedWorker: c.assigned_to,
-             assignedWorkerName: 'You',
-             category: c.category || 'Maintenance',
-             createdAt: c.created_at || new Date().toISOString(),
-             updatedAt: c.updated_at || new Date().toISOString(),
-             images: c.images || [],
-             publishedToPublic: false
+          id: c.id,
+          title: c.ticket_id,
+          description: c.summary || c.raw_text,
+          status: c.status?.toLowerCase() || 'new',
+          progress: c.progress || 0,
+          ward: c.ward_id || 'Unknown',
+          location: c.location || 'Unknown',
+          deadline: c.deadline || '2026-04-01',
+          priority: 'medium' as const,
+          assignedWorker: c.assigned_to,
+          assignedWorkerName: 'You',
+          category: c.category || 'Maintenance',
+          createdAt: c.created_at || new Date().toISOString(),
+          updatedAt: c.updated_at || new Date().toISOString(),
+          images: c.images || [],
+          publishedToPublic: false
         }));
         setWorkerTasks([...liveTasks, ...mockTasks.filter(t => t.assignedWorker === 'w1')]);
       } catch (err) {

@@ -51,7 +51,7 @@ const Login = () => {
               <Landmark className="h-6 w-6 text-[#FF9933]" />
             </div>
             <div>
-              <p className="text-lg font-bold text-white tracking-tight">Bharat AI</p>
+              <p className="text-lg font-bold text-white tracking-tight">PSRM-AI</p>
               <p className="text-xs text-white/50 font-medium">Constituency Portal</p>
             </div>
           </div>
@@ -87,7 +87,7 @@ const Login = () => {
               <Landmark className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-bold tracking-tight">Bharat AI</p>
+              <p className="text-lg font-bold tracking-tight">PSRM-AI</p>
               <p className="text-xs text-muted-foreground font-medium">Constituency Portal</p>
             </div>
           </div>
@@ -169,7 +169,7 @@ const Login = () => {
           </form>
 
           <p className="text-xs text-muted-foreground text-center mt-6">
-            Powered by Bharat AI 🇮🇳
+            Powered by PSRM-AI 🇮🇳
           </p>
         </div>
       </div>
