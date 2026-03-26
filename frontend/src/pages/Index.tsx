@@ -2,7 +2,7 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 import { StatCard } from '@/components/StatCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { WARDS, CATEGORIES } from '@/data/mock';
-import { CheckCircle2, Clock, AlertCircle, Users, MapPin, Calendar, Filter, BadgeCheck, FileText } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, Users, MapPin, Calendar, Filter, BadgeCheck, FileText, ArrowRight, Shield, Eye, Megaphone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,31 +15,35 @@ const Index = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPublicData = async () => {
       try {
+        setLoading(true);
         const response = await apiClient.getPublicComplaints();
+        console.log('[Landing] Public complaints response:', response);
         if (response.data) {
-          const mappedTasks = response.data.map((c: any) => ({
+          const complaintsArray = Array.isArray(response.data) ? response.data : [];
+          const mappedTasks = complaintsArray.map((c: any) => ({
             id: c.id,
-            title: c.ticket_id,
-            description: c.ai_overview || c.summary || c.raw_text, // Use AI Overview primarily
+            title: c.ticket_id || c.id?.slice(0, 8),
+            description: c.ai_overview || c.summary || c.raw_text,
             ward: c.ward_id || 'Unknown',
             location: c.ward_id || 'Unknown',
-            category: c.category,
-            priority: 'medium', // Default for public view or map if needed
-            status: c.status.toLowerCase() as TaskStatus,
+            category: c.category || 'General',
+            priority: c.priority <= 2 ? 'urgent' : c.priority <= 3 ? 'high' : 'medium',
+            status: (c.status || 'new').toLowerCase().replace(/_/g, '-') as TaskStatus,
             ai_overview: c.ai_overview,
             publishedToPublic: true,
-            completedAt: c.resolved_at ? new Date(c.resolved_at).toLocaleDateString() : undefined,
+            progress: c.status?.toLowerCase() === 'completed' ? 100 : c.status?.toLowerCase() === 'in-progress' ? 50 : 10,
+            completedAt: c.resolved_at ? new Date(c.resolved_at).toLocaleDateString('en-IN') : undefined,
             createdAt: c.created_at
           }));
           setTasks(mappedTasks);
 
-          // Derive updates from completed tasks or specific logic
           const recentUpdates = mappedTasks
             .filter((t: any) => t.status === 'completed')
             .slice(0, 5)
@@ -58,6 +62,8 @@ const Index = () => {
         }
       } catch (error) {
         console.error("Failed to fetch public data:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchPublicData();
@@ -65,10 +71,9 @@ const Index = () => {
 
   const completed = tasks.filter(t => t.status === 'completed').length;
   const inProgress = tasks.filter(t => t.status === 'in-progress').length;
-  const pending = tasks.filter(t => t.status === 'awaiting-approval').length;
+  const pending = tasks.filter(t => ['awaiting-approval', 'new'].includes(t.status)).length;
   const total = tasks.length;
 
-  // Only show published tasks on public dashboard
   const filteredTasks = tasks.filter(t => {
     if (wardFilter !== 'all' && t.ward !== wardFilter) return false;
     if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
@@ -78,55 +83,118 @@ const Index = () => {
 
   return (
     <PublicLayout>
-      {/* Hero section */}
-      <section className="hero-section text-white py-20 lg:py-32">
-        <div className="animated-blob bg-sidebar-ring/40 w-96 h-96 rounded-full top-0 left-10 pt-10"></div>
-        <div className="animated-blob bg-secondary/20 w-80 h-80 rounded-full bottom-0 right-20" style={{ animationDelay: '2s' }}></div>
-        
-        <div className="container mx-auto px-4 relative z-10 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight animate-fade-in text-white/95">
-            Your Voice, <span className="text-accent underline decoration-4 underline-offset-8">Amplified.</span>
-          </h1>
-          <p className="text-lg md:text-xl relative z-10 mb-10 max-w-2xl mx-auto opacity-90 text-zinc-100 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Directly connect with your local representative. Report issues, track progress, and build a better community together.
-          </p>
-          
-          <div className="animate-fade-in flex justify-center pb-8" style={{ animationDelay: '0.2s' }}>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="lg" className="h-14 px-8 text-lg font-semibold shadow-xl hover:scale-105 transition-transform bg-accent text-accent-foreground border-border">
-                  <FileText className="mr-2 h-5 w-5" />
-                  File a Complaint
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] glass-panel max-h-[90vh] overflow-y-auto text-foreground">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold">Submit a Grievance</DialogTitle>
-                </DialogHeader>
-                <ComplaintForm onSuccess={() => setIsDialogOpen(false)} />
-              </DialogContent>
-            </Dialog>
+      {/* Hero section — Indian Tricolour Gradient */}
+      <section className="relative overflow-hidden bg-sidebar text-white">
+        {/* Saffron glow top-left */}
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-[#FF9933]/20 blur-[120px] pointer-events-none" />
+        {/* Green glow bottom-right */}
+        <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-[#138808]/15 blur-[120px] pointer-events-none" />
+        {/* Chakra pattern overlay */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-white/[0.03] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-white/[0.05] pointer-events-none" />
+
+        <div className="container mx-auto px-4 py-24 lg:py-36 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs font-semibold tracking-wide mb-8 animate-fade-in backdrop-blur-sm">
+              <Shield className="h-3.5 w-3.5 text-[#FF9933]" />
+              <span>Bharat AI — Constituency Transparency Portal</span>
+            </div>
+
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight animate-fade-in leading-[1.1]">
+              Your Voice,{' '}
+              <span className="bg-gradient-to-r from-[#FF9933] via-white to-[#138808] bg-clip-text text-transparent">
+                Amplified.
+              </span>
+            </h1>
+
+            <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-white/70 animate-fade-in font-medium" style={{ animationDelay: '0.1s' }}>
+              Directly connect with your local representative. Report issues, track progress, and build a better community together.
+            </p>
+
+            <div className="animate-fade-in flex flex-col sm:flex-row items-center justify-center gap-4" style={{ animationDelay: '0.2s' }}>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="h-14 px-8 text-base font-semibold shadow-xl hover:scale-105 transition-all bg-[#FF9933] hover:bg-[#FF9933]/90 text-white rounded-xl border-0">
+                    <FileText className="mr-2 h-5 w-5" />
+                    File a Complaint
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px] glass-panel max-h-[90vh] overflow-y-auto text-foreground">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">Submit a Grievance</DialogTitle>
+                  </DialogHeader>
+                  <ComplaintForm onSuccess={() => setIsDialogOpen(false)} />
+                </DialogContent>
+              </Dialog>
+              
+              <a href="#projects" className="h-14 px-8 text-base font-semibold rounded-xl border border-white/20 text-white/90 hover:bg-white/10 transition-all flex items-center gap-2">
+                View Projects <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom tricolour fade */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+      </section>
+
+      {/* Stats section */}
+      <section className="bg-background relative -mt-0 z-20">
+        <div className="container mx-auto px-4 -mt-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <StatCard title="Works Completed" value={completed} icon={CheckCircle2} iconClassName="bg-[#138808]/10" description="✓ Resolved" />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <StatCard title="In Progress" value={inProgress} icon={Clock} iconClassName="bg-blue-500/10" description="Active" />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              <StatCard title="Pending Review" value={pending} icon={AlertCircle} iconClassName="bg-[#FF9933]/10" description="Awaiting" />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              <StatCard title="Total Complaints" value={total} icon={Users} iconClassName="bg-primary/10" description="All time" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Hero stats */}
-      <section className="bg-background relative -mt-8 z-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}><StatCard title="Works Completed" value={completed} icon={CheckCircle2} /></div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}><StatCard title="In Progress" value={inProgress} icon={Clock} /></div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}><StatCard title="Pending Approval" value={pending} icon={AlertCircle} /></div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}><StatCard title="Total Projects" value={total} icon={Users} /></div>
-          </div>
+      {/* Feature promises */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { icon: Eye, title: 'Full Transparency', desc: 'Track every complaint from submission to resolution in real-time.', color: '#FF9933' },
+            { icon: Shield, title: 'AI-Powered Triage', desc: 'Complaints are automatically categorized and prioritized using Bharat AI.', color: '#000080' },
+            { icon: Megaphone, title: 'Your Voice Matters', desc: 'Every citizen complaint is heard, assigned, and actioned upon.', color: '#138808' },
+          ].map((feature, i) => (
+            <div key={i} className="stat-card group cursor-default" style={{ animationDelay: `${0.2 * i}s` }}>
+              <div className="h-12 w-12 rounded-2xl flex items-center justify-center mb-4 transition-colors" style={{ backgroundColor: `${feature.color}15` }}>
+                <feature.icon className="h-6 w-6" style={{ color: feature.color }} />
+              </div>
+              <h3 className="text-lg font-bold mb-2 text-foreground">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Latest Updates */}
       <section id="updates" className="container mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold mb-6">Latest Approved Updates</h2>
-        {updates.length === 0 ? (
-          <p className="text-muted-foreground">No updates yet.</p>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-8 w-1 rounded-full bg-[#138808]" />
+          <h2 className="text-2xl font-bold text-foreground">Latest Resolved Updates</h2>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center gap-3 text-muted-foreground py-8">
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Loading updates from database...</span>
+          </div>
+        ) : updates.length === 0 ? (
+          <div className="bg-muted/50 rounded-2xl p-8 text-center">
+            <p className="text-muted-foreground font-medium">No completed updates yet.</p>
+            <p className="text-xs text-muted-foreground mt-1">Resolved complaints will appear here.</p>
+          </div>
         ) : (
           <div className="space-y-4">
             {updates.map(update => (
@@ -139,20 +207,13 @@ const Index = () => {
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{update.location}</span>
-                      <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{update.completedAt}</span>
+                      {update.completedAt && <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{update.completedAt}</span>}
                     </div>
-                    <p className="mt-2 text-sm">{update.description}</p>
-                    {update.images && update.images.length > 0 && (
-                      <div className="mt-2 flex gap-2">
-                        {update.images.map((img: string, i: number) => (
-                           <img key={i} src={img} alt="update" className="h-20 w-20 object-cover rounded" />
-                        ))}
-                      </div>
-                    )}
+                    <p className="mt-2 text-sm text-muted-foreground/80 line-clamp-2">{update.description}</p>
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-medium shrink-0" style={{ color: 'hsl(152, 60%, 40%)' }}>
+                  <div className="flex items-center gap-1.5 text-xs font-semibold shrink-0 text-[#138808] bg-[#138808]/10 px-3 py-1.5 rounded-lg">
                     <BadgeCheck className="h-4 w-4" />
-                    Approved by Politician
+                    Resolved
                   </div>
                 </div>
               </div>
@@ -161,53 +222,76 @@ const Index = () => {
         )}
       </section>
 
-      {/* Projects List - only published */}
-      <section id="projects" className="container mx-auto px-4 py-8 border-t">
+      {/* Projects List */}
+      <section id="projects" className="container mx-auto px-4 py-12">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-8 w-1 rounded-full bg-[#FF9933]" />
+          <h2 className="text-2xl font-bold text-foreground">All Complaints</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-6 ml-4">Live data from Neon database via Bharat AI backend</p>
+
+        {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h2 className="text-2xl font-bold">Published Projects</h2>
           <div className="flex items-center gap-2 text-sm flex-wrap">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <select value={wardFilter} onChange={e => setWardFilter(e.target.value)} className="rounded-md border bg-card px-2 py-1.5 text-sm">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Filter className="h-4 w-4" />
+              <span className="font-medium hidden sm:inline">Filter:</span>
+            </div>
+            <select value={wardFilter} onChange={e => setWardFilter(e.target.value)} className="rounded-xl border bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
               <option value="all">All Wards</option>
               {WARDS.map(w => <option key={w} value={w}>{w}</option>)}
             </select>
-            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="rounded-md border bg-card px-2 py-1.5 text-sm">
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="rounded-xl border bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
               <option value="all">All Categories</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="rounded-md border bg-card px-2 py-1.5 text-sm">
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="rounded-xl border bg-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
               <option value="all">All Status</option>
               <option value="new">New</option>
               <option value="in-progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
           </div>
+          <span className="text-xs text-muted-foreground font-medium">
+            {filteredTasks.length} complaint{filteredTasks.length !== 1 ? 's' : ''} found
+          </span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {filteredTasks.map(task => (
-            <div key={task.id} className="stat-card">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold">{task.title}</h3>
-                <StatusBadge status={task.status} />
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
-              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{task.ward}</span>
-                <span>{task.category}</span>
-                {task.completedAt && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{task.completedAt}</span>}
-              </div>
-              <div className="mt-3">
-                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${task.progress}%` }} />
+        {loading ? (
+          <div className="flex items-center justify-center gap-3 text-muted-foreground py-16">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Fetching complaints from database...</span>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredTasks.map(task => (
+              <div key={task.id} className="stat-card group">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{task.title}</h3>
+                  <StatusBadge status={task.status} />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{task.progress}% complete</p>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{task.description}</p>
+                <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{task.ward || 'Unknown'}</span>
+                  <span className="bg-muted px-2 py-0.5 rounded-md font-medium">{task.category}</span>
+                  {task.completedAt && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{task.completedAt}</span>}
+                </div>
+                <div className="mt-4">
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-[#FF9933] to-[#138808] transition-all duration-700" style={{ width: `${task.progress}%` }} />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 font-medium">{task.progress}% complete</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-        {filteredTasks.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">No published projects match your filters.</p>
+            ))}
+          </div>
+        )}
+        
+        {!loading && filteredTasks.length === 0 && (
+          <div className="text-center py-16 bg-muted/30 rounded-2xl">
+            <p className="text-muted-foreground font-medium">No complaints match your filters.</p>
+            <p className="text-xs text-muted-foreground mt-1">Try adjusting the filters or check back later.</p>
+          </div>
         )}
       </section>
     </PublicLayout>

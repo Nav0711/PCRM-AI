@@ -20,6 +20,8 @@ interface ChatDrawerProps {
   initialMessage?: string;
 }
 
+const CHAT_STORAGE_KEY = 'pcrm_ai_chat_history';
+
 export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'briefing' | 'chat'>('briefing');
@@ -33,6 +35,27 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
 
   const [briefing, setBriefing] = useState<any>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
+
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (savedMessages) {
+        setMessages(JSON.parse(savedMessages));
+      }
+    } catch (err) {
+      console.error('Failed to load chat history:', err);
+    }
+  }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    } catch (err) {
+      console.error('Failed to save chat history:', err);
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (!open) {
@@ -122,6 +145,7 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
 
   const clearChat = () => {
     setMessages([]);
+    localStorage.removeItem(CHAT_STORAGE_KEY);
     setError(null);
   };
 

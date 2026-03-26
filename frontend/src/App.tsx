@@ -17,6 +17,7 @@ import Workers from "./pages/politician/Workers";
 import Analytics from "./pages/politician/Analytics";
 import Settings from "./pages/politician/Settings";
 import WorkerDashboard from "./pages/worker/Dashboard";
+import AssignedWork from "./pages/worker/AssignedWork";
 import TaskDetail from "./pages/worker/TaskDetail";
 
 import WorkerSettings from "./pages/worker/Settings";
@@ -47,6 +48,7 @@ const App = () => (
 
               {/* Worker */}
               <Route path="/worker/dashboard" element={<ProtectedRoute requiredRole="worker"><WorkerDashboard /></ProtectedRoute>} />
+              <Route path="/worker/assigned" element={<ProtectedRoute requiredRole="worker"><AssignedWork /></ProtectedRoute>} />
               <Route path="/worker/task/:taskId" element={<ProtectedRoute requiredRole="worker"><TaskDetail /></ProtectedRoute>} />
               <Route path="/worker/settings" element={<ProtectedRoute requiredRole="worker"><WorkerSettings /></ProtectedRoute>} />
 

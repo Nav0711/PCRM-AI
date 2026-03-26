@@ -10,25 +10,20 @@ app = FastAPI(title="P-CRM API", version="1.0.0")
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# CORS configuration - allow specific origins for credentials
-allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "https://pcrm-ai-wine.vercel.app",  # production frontend
-]
-
+# CORS configuration - MUST be added FIRST before any routes or other middleware
+# Use permissive CORS to ensure preflight requests always succeed. We are not using cookies, so credentials can remain False.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # allow Vercel preview deploys
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Accept"],
-    max_age=600,
+    allow_origins=["*"],  # allow all origins for dev / preview
+    allow_origin_regex=".*",
+    allow_credentials=False,  # Authorization header is still allowed without credentialed mode
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,  # 24 hours
 )
 
+# Include routers AFTER middleware
 app.include_router(auth.router)
 app.include_router(complaints.router)
 app.include_router(analytics.router)

@@ -12,6 +12,15 @@ from sqlalchemy import func
 
 router = APIRouter(prefix="/api/v1/copilot", tags=["copilot"])
 
+# Handle OPTIONS preflight requests without authentication
+@router.options("/chat")
+def options_chat():
+    return {}
+
+@router.options("/briefing/today")
+def options_briefing():
+    return {}
+
 @router.post("/chat")
 def chat(request: ChatRequest, db: Session = Depends(get_db), current_user: User = Depends(require_role(["Politician"]))):
     # Fetch real context from DB based on query_type

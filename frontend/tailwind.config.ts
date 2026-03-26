@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["'Source Sans 3'", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["'Inter'", "system-ui", "-apple-system", "sans-serif"],
         display: ["'Playfair Display'", "Georgia", "serif"],
       },
       colors: {

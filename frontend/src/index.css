@@ -1,97 +1,111 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 40% 13%;
+    /* Indian Tricolour Inspired — Light Theme */
+    --background: 40 30% 98%;
+    --foreground: 210 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 40% 13%;
+    --card-foreground: 210 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 13%;
+    --popover-foreground: 210 25% 12%;
 
-    --primary: 220 55% 22%;
-    --primary-foreground: 210 40% 98%;
+    /* Saffron-accented primary */
+    --primary: 24 90% 52%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 25% 93%;
-    --secondary-foreground: 220 40% 13%;
+    --secondary: 40 20% 95%;
+    --secondary-foreground: 210 25% 12%;
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 40 15% 94%;
+    --muted-foreground: 210 10% 48%;
 
-    --accent: 40 90% 50%;
-    --accent-foreground: 220 40% 13%;
+    /* India Green accent */
+    --accent: 140 60% 35%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 25% 88%;
-    --input: 214 25% 88%;
-    --ring: 220 55% 22%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 24 90% 52%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
     /* Status colors */
     --status-new: 220 10% 58%;
     --status-in-progress: 210 80% 52%;
     --status-awaiting: 33 90% 55%;
-    --status-completed: 152 60% 40%;
-    --status-rejected: 0 72% 51%;
+    --status-completed: 140 60% 40%;
+    --status-rejected: 0 84% 60%;
 
-    /* Sidebar */
-    --sidebar-background: 220 55% 18%;
-    --sidebar-foreground: 210 30% 90%;
-    --sidebar-primary: 40 90% 50%;
-    --sidebar-primary-foreground: 220 40% 13%;
-    --sidebar-accent: 220 50% 26%;
-    --sidebar-accent-foreground: 210 30% 95%;
-    --sidebar-border: 220 45% 28%;
-    --sidebar-ring: 40 90% 50%;
+    /* Sidebar — Deep Navy (inspired by Ashoka Chakra blue) */
+    --sidebar-background: 220 40% 12%;
+    --sidebar-foreground: 40 30% 95%;
+    --sidebar-primary: 24 90% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 35% 20%;
+    --sidebar-accent-foreground: 40 30% 95%;
+    --sidebar-border: 220 35% 18%;
+    --sidebar-ring: 24 90% 52%;
 
-    /* Extra tokens for Premium Aesthetics */
-    --hero-gradient: linear-gradient(135deg, hsl(var(--sidebar-background)) 0%, hsl(var(--primary)) 100%);
-    --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --glass-bg: rgba(255, 255, 255, 0.7);
+    /* Premium aesthetics */
+    --hero-gradient: linear-gradient(135deg, hsl(24 90% 52%) 0%, hsl(24 85% 45%) 35%, hsl(0 0% 99%) 50%, hsl(140 60% 35%) 65%, hsl(140 55% 28%) 100%);
+    --card-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.06);
+    --card-shadow-hover: 0 20px 40px -10px rgb(0 0 0 / 0.12);
+    --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(255, 255, 255, 0.5);
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 40 90% 50%;
-    --primary-foreground: 220 40% 13%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 40 90% 50%;
-    --accent-foreground: 220 40% 13%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 40 90% 50%;
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 30% 90%;
-    --sidebar-primary: 40 90% 50%;
-    --sidebar-primary-foreground: 220 40% 13%;
-    --sidebar-accent: 217 33% 20%;
-    --sidebar-accent-foreground: 210 30% 95%;
-    --sidebar-border: 217 33% 20%;
-    --sidebar-ring: 40 90% 50%;
-    --glass-bg: rgba(0, 0, 0, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Indian Tricolour — Dark Theme */
+    --background: 220 20% 5%;
+    --foreground: 40 20% 96%;
+
+    --card: 220 20% 9%;
+    --card-foreground: 40 20% 96%;
+
+    --popover: 220 20% 9%;
+    --popover-foreground: 40 20% 96%;
+
+    --primary: 24 90% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 14%;
+    --secondary-foreground: 40 20% 96%;
+
+    --muted: 220 15% 14%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 140 55% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 16%;
+    --input: 220 15% 16%;
+    --ring: 24 90% 55%;
+
+    --sidebar-background: 220 30% 6%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 24 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 25% 12%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 220 25% 12%;
+    --sidebar-ring: 24 90% 55%;
+
+    --hero-gradient: linear-gradient(135deg, hsl(24 70% 30%) 0%, hsl(220 20% 8%) 40%, hsl(220 20% 8%) 60%, hsl(140 40% 22%) 100%);
+    --glass-bg: rgba(0, 0, 0, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -101,7 +115,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
@@ -110,11 +124,12 @@
 
 @layer components {
   .stat-card {
-    @apply bg-card rounded-lg border p-5 transition-shadow duration-200;
+    @apply bg-card rounded-2xl border p-6 transition-all duration-300;
     box-shadow: var(--card-shadow);
   }
   .stat-card:hover {
     box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
   }
   .status-new {
     @apply bg-muted text-muted-foreground;
@@ -146,17 +161,25 @@
   }
   .glass-panel {
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   }
   .animated-blob {
     position: absolute;
     filter: blur(80px);
     z-index: 0;
-    opacity: 0.6;
+    opacity: 0.5;
     animation: blob-float 10s infinite alternate ease-in-out;
+  }
+  .tricolour-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #FF9933 0%, #FF9933 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%, #138808 100%);
+  }
+  .tricolour-border-top {
+    border-top: 3px solid transparent;
+    border-image: linear-gradient(90deg, #FF9933, #FFFFFF, #138808) 1;
   }
 }
 
@@ -169,4 +192,9 @@
   0% { transform: scale(1) translate(0, 0); }
   50% { transform: scale(1.1) translate(5%, 5%); }
   100% { transform: scale(0.9) translate(-5%, -5%); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

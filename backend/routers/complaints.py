@@ -14,6 +14,15 @@ import shutil
 
 router = APIRouter(prefix="/api/v1/complaints", tags=["complaints"])
 
+# Handle OPTIONS preflight requests
+@router.options("")
+def options_complaints():
+    return {}
+
+@router.options("/upload")
+def options_upload():
+    return {}
+
 def generate_ticket_id():
     now = datetime.now()
     return f"CMP-{now.strftime('%Y%m')}-{str(uuid.uuid4().int)[:5]}"
@@ -89,4 +98,5 @@ def assign_complaint(
 
 @router.get("/public", response_model=List[ComplaintResponse])
 def get_public_complaints(db: Session = Depends(get_db)):
-    return db.query(Complaint).filter(Complaint.publishedToPublic == True).all()
+    """Return all complaints for public dashboard, ordered by newest first."""
+    return db.query(Complaint).order_by(Complaint.created_at.desc()).all()

@@ -9,10 +9,12 @@ import { Slider } from '@/components/ui/slider';
 import { MapPin, Calendar, ArrowLeft, Play, CheckCircle2, Clock, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Task, ActivityLogEntry, FileAttachment } from '@/types';
+import { useAIChat } from '@/contexts/AIChatContext';
 
 const TaskDetail = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
+  const { openChat } = useAIChat();
   const taskData = mockTasks.find(t => t.id === taskId);
 
   const [task, setTask] = useState<Task | null>(taskData ? { ...taskData } : null);
@@ -83,6 +85,12 @@ const TaskDetail = () => {
   const canStart = task.status === 'new' || task.status === 'rejected';
   const canUpdate = task.status === 'in-progress';
   const isFinalized = task.status === 'awaiting-approval' || task.status === 'completed';
+
+  const launchAIWithContext = (prompt: string) => {
+    openChat(
+      `You are assisting a worker on a field task. Task: ${task.title}. Status: ${task.status}. Progress: ${task.progress}%. Location: ${task.location}. Ward: ${task.ward}. Deadline: ${task.deadline}. Prompt: ${prompt}`
+    );
+  };
 
   return (
     <WorkerLayout>
@@ -170,6 +178,20 @@ const TaskDetail = () => {
                 Mark Complete
               </button>
             </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => launchAIWithContext('Draft a concise progress update I can paste including work done, blockers, and next steps.')}
+                className="text-xs px-3 py-2 rounded-md border hover:bg-secondary"
+              >
+                AI: Draft update
+              </button>
+              <button
+                onClick={() => launchAIWithContext('Suggest proof/evidence items I should upload for this task.')}
+                className="text-xs px-3 py-2 rounded-md border hover:bg-secondary"
+              >
+                AI: Proof suggestions
+              </button>
+            </div>
           </div>
         )}
 
@@ -209,6 +231,31 @@ const TaskDetail = () => {
             </div>
           </div>
         )}
+
+        {/* AI Helper quick actions */}
+        <div className="stat-card space-y-3">
+          <h3 className="font-semibold">AI assistant</h3>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => launchAIWithContext('Give me the next 3 steps to move this task forward today.')}
+              className="text-xs px-3 py-2 rounded-md border hover:bg-secondary"
+            >
+              Next steps
+            </button>
+            <button
+              onClick={() => launchAIWithContext('Draft a message to the supervisor requesting approval for completion.')}
+              className="text-xs px-3 py-2 rounded-md border hover:bg-secondary"
+            >
+              Approval request
+            </button>
+            <button
+              onClick={() => launchAIWithContext('Summarize current status into 3 bullet points for a standup update.')}
+              className="text-xs px-3 py-2 rounded-md border hover:bg-secondary"
+            >
+              Standup summary
+            </button>
+          </div>
+        </div>
       </div>
     </WorkerLayout>
   );

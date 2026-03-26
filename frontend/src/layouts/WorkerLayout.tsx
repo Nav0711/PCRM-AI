@@ -1,13 +1,30 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ClipboardList, Building2, Bell, Settings } from 'lucide-react';
+import { AIChatProvider } from '@/contexts/AIChatContext';
+import { ClipboardList, ClipboardCheck, UserCog, Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FloatingChatButton } from '@/components/ai/FloatingChatButton';
+import { ChatDrawer } from '@/components/ai/ChatDrawer';
 
 export function WorkerLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInitialMessage, setChatInitialMessage] = useState<string | undefined>();
+  const isDashboard = location.pathname === '/worker/dashboard';
+
+  const navItems = [
+    { label: 'Dashboard', href: '/worker/dashboard', icon: ClipboardList },
+    { label: 'Assigned Work', href: '/worker/assigned', icon: ClipboardCheck },
+    { label: 'Settings', href: '/worker/settings', icon: UserCog },
+  ];
+
+  const openChat = (msg?: string) => {
+    setChatInitialMessage(msg);
+    setChatOpen(true);
+  };
 
   const handleLogout = () => {
     logout();
@@ -15,60 +32,77 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Top bar */}
-      <header className="hero-section text-primary-foreground shrink-0">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-accent-foreground" />
-            </div>
-            <div>
-              <p className="text-sm font-bold">Worker Portal</p>
-              <p className="text-xs opacity-70">{user?.name}</p>
+    <AIChatProvider value={{ openChat }}>
+      <div className="h-screen flex overflow-hidden bg-background">
+        {/* Sidebar */}
+        <aside className="hidden md:flex w-64 flex-col border-r bg-card/60 backdrop-blur">
+          <div className="p-5 border-b">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
+                <ClipboardList className="h-6 w-6 text-accent-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-base font-bold tracking-tight">Worker Portal</p>
+                <p className="text-xs opacity-80 font-medium truncate">{user?.name}</p>
+              </div>
             </div>
           </div>
+          <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+            {navItems.map(item => {
+              const active = location.pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200',
+                    active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  )}
+                >
+                  <item.icon className={cn('h-5 w-5', active ? 'text-primary' : '')} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="p-4 border-t">
+            <button
+              onClick={() => { logout(); navigate('/login'); }}
+              className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium w-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <LogOut className="h-5 w-5" />
+              Logout
+            </button>
+          </div>
+        </aside>
+
+        {/* Main */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top bar */}
+          <header className="h-16 bg-card/70 backdrop-blur border-b px-4 md:px-8 flex items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-3">
+              <button className="md:hidden p-2 -ml-2 rounded-lg hover:bg-muted" onClick={() => navigate('/worker/dashboard')}>
+                <Menu className="h-5 w-5" />
+              </button>
+              <h1 className="text-lg md:text-xl font-bold">{navItems.find(i => i.href === location.pathname)?.label || 'Dashboard'}</h1>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="hidden sm:inline">{user?.name}</span>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-secondary/30">
+            {children}
+          </main>
         </div>
-      </header>
 
-      {/* Content */}
-      <main className="flex-1 container mx-auto px-4 py-4 md:py-6 max-w-2xl pb-20 sm:pb-6">
-        {children}
-      </main>
-
-      {/* Bottom tab bar - mobile optimized */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 border-t bg-card flex shrink-0 z-30 safe-area-bottom">
-        <Link
-          to="/worker/dashboard"
-          className={cn(
-            'flex-1 flex flex-col items-center py-3 text-xs gap-0.5',
-            location.pathname === '/worker/dashboard' ? 'text-primary font-semibold' : 'text-muted-foreground'
-          )}
-        >
-          <ClipboardList className="h-5 w-5" />
-          Tasks
-        </Link>
-        <Link
-          to="/worker/dashboard"
-          className={cn(
-            'flex-1 flex flex-col items-center py-3 text-xs gap-0.5',
-            'text-muted-foreground'
-          )}
-        >
-          <Bell className="h-5 w-5" />
-          Updates
-        </Link>
-        <Link
-          to="/worker/settings"
-          className={cn(
-            'flex-1 flex flex-col items-center py-3 text-xs gap-0.5',
-            location.pathname === '/worker/settings' ? 'text-primary font-semibold' : 'text-muted-foreground'
-          )}
-        >
-          <Settings className="h-5 w-5" />
-          Settings
-        </Link>
-      </nav>
-    </div>
+        {!isDashboard && <FloatingChatButton onClick={() => openChat()} />}
+        <ChatDrawer
+          open={chatOpen}
+          onClose={() => { setChatOpen(false); setChatInitialMessage(undefined); }}
+          initialMessage={chatInitialMessage}
+        />
+      </div>
+    </AIChatProvider>
   );
 }

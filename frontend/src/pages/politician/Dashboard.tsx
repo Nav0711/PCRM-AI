@@ -13,7 +13,7 @@ const PoliticianDashboard = () => {
       try {
         const response = await apiClient.getComplaints();
         if (response.data) {
-          const tasks = response.data;
+          const tasks = (response.data || []) as any[];
           setTasksCount({
             total: tasks.length,
             inProgress: tasks.filter((t: any) => t.status.toLowerCase() === 'in-progress').length,
@@ -31,18 +31,22 @@ const PoliticianDashboard = () => {
 
   return (
     <PoliticianLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">AI Briefing Center</h1>
-          <p className="text-sm text-muted-foreground mt-1">Your Personal Intelligence Panel for Constituency Management</p>
-        </div>
+      <div className="space-y-8">
+        <div className="bg-muted/40 rounded-[2rem] p-6 md:p-8 relative overflow-hidden border border-border/40">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#FF9933]/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#138808]/8 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="relative z-10">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Good morning, Representative!</h1>
+            <p className="text-base text-muted-foreground mt-2 font-medium">Your Personal Intelligence Panel for Constituency Management</p>
+          </div>
 
-        {/* Top Stats Retained for Quick Look */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Assigned Works" value={tasksCount.total} icon={ClipboardList} />
-          <StatCard title="In Progress" value={tasksCount.inProgress} icon={Clock} />
-          <StatCard title="Pending Approval" value={tasksCount.pending} icon={AlertCircle} />
-          <StatCard title="Completed" value={tasksCount.completed} icon={CheckCircle2} />
+          {/* Top Stats Retained for Quick Look */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 relative z-10">
+            <StatCard title="Total Assigned Works" value={tasksCount.total} icon={ClipboardList} description="Lifetime tracked" iconClassName="bg-[#FF9933]/10" />
+            <StatCard title="In Progress" value={tasksCount.inProgress} icon={Clock} iconClassName="bg-blue-500/10" description="Active now" />
+            <StatCard title="Pending Approval" value={tasksCount.pending} icon={AlertCircle} iconClassName="bg-[#FF9933]/10" description="Awaiting action" />
+            <StatCard title="Completed" value={tasksCount.completed} icon={CheckCircle2} iconClassName="bg-[#138808]/10" description="Successfully resolved" />
+          </div>
         </div>
 
         {/* The Core AI Panel */}
