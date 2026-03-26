@@ -6,106 +6,104 @@
 
 @layer base {
   :root {
-    /* Indian Tricolour Inspired — Light Theme */
-    --background: 40 30% 98%;
-    --foreground: 210 25% 12%;
+    /* Light theme — blue & white */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 25% 12%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 25% 12%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Saffron-accented primary */
-    --primary: 24 90% 52%;
+    --primary: 217 91% 60%; /* blue-500 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 20% 95%;
-    --secondary-foreground: 210 25% 12%;
+    --secondary: 213 32% 92%; /* soft blue */
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 40 15% 94%;
-    --muted-foreground: 210 10% 48%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 15% 45%;
 
-    /* India Green accent */
-    --accent: 140 60% 35%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 213 94% 68%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 15% 88%;
-    --input: 40 15% 88%;
-    --ring: 24 90% 52%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
 
     --radius: 1.25rem;
 
-    /* Status colors */
-    --status-new: 220 10% 58%;
-    --status-in-progress: 210 80% 52%;
-    --status-awaiting: 33 90% 55%;
-    --status-completed: 140 60% 40%;
+    /* Status colors (still distinct but cooler) */
+    --status-new: 215 15% 55%;
+    --status-in-progress: 217 91% 60%;
+    --status-awaiting: 43 96% 56%;
+    --status-completed: 142 72% 35%;
     --status-rejected: 0 84% 60%;
 
-    /* Sidebar — Deep Navy (inspired by Ashoka Chakra blue) */
-    --sidebar-background: 220 40% 12%;
-    --sidebar-foreground: 40 30% 95%;
-    --sidebar-primary: 24 90% 52%;
+    /* Sidebar — light navy on white */
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 35% 20%;
-    --sidebar-accent-foreground: 40 30% 95%;
-    --sidebar-border: 220 35% 18%;
-    --sidebar-ring: 24 90% 52%;
+    --sidebar-accent: 214 32% 92%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 88%;
+    --sidebar-ring: 217 91% 60%;
 
-    /* Premium aesthetics */
-    --hero-gradient: linear-gradient(135deg, hsl(24 90% 52%) 0%, hsl(24 85% 45%) 35%, hsl(0 0% 99%) 50%, hsl(140 60% 35%) 65%, hsl(140 55% 28%) 100%);
-    --card-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.06);
-    --card-shadow-hover: 0 20px 40px -10px rgb(0 0 0 / 0.12);
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.5);
+    /* Blue-focused aesthetics */
+    --hero-gradient: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(221 83% 53%) 40%, hsl(210 40% 98%) 100%);
+    --card-shadow: 0 10px 30px -10px rgb(15 23 42 / 0.08);
+    --card-shadow-hover: 0 20px 40px -10px rgb(15 23 42 / 0.16);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(148, 163, 184, 0.4);
   }
 
   .dark {
-    /* Indian Tricolour — Dark Theme (Inspiration layout deep dark aesthetics) */
-    --background: 228 15% 8%;
-    --foreground: 0 0% 95%;
+    /* Dark theme — blue & deep navy */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 228 15% 11%;
-    --card-foreground: 0 0% 95%;
+    --card: 222 47% 13%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 228 15% 11%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 222 47% 13%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 28 90% 55%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 228 15% 15%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 221 39% 16%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 228 15% 15%;
-    --muted-foreground: 228 10% 60%;
+    --muted: 221 39% 16%;
+    --muted-foreground: 215 20% 72%;
 
-    --accent: 140 60% 40%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 215 100% 70%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 228 10% 18%;
-    --input: 228 10% 18%;
-    --ring: 28 90% 55%;
+    --border: 221 39% 20%;
+    --input: 221 39% 20%;
+    --ring: 217 91% 60%;
 
-    --sidebar-background: 228 15% 6%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 28 90% 55%;
+    --sidebar-background: 222 47% 9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 228 15% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 228 15% 12%;
-    --sidebar-ring: 28 90% 55%;
+    --sidebar-accent: 221 39% 16%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 221 39% 18%;
+    --sidebar-ring: 217 91% 60%;
 
-    --hero-gradient: radial-gradient(circle at top right, rgba(255, 153, 51, 0.15) 0%, rgba(19, 136, 8, 0.08) 40%, hsl(228 15% 8%) 100%);
-    --glass-bg: rgba(26, 28, 35, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.05);
+    --hero-gradient: radial-gradient(circle at top right, rgba(59, 130, 246, 0.35) 0%, rgba(15, 23, 42, 1) 55%, rgba(15, 23, 42, 1) 100%);
+    --glass-bg: rgba(15, 23, 42, 0.8);
+    --glass-border: rgba(148, 163, 184, 0.3);
   }
 }
 
@@ -188,12 +186,12 @@
     animation: blob-float 10s infinite alternate ease-in-out;
   }
   .tricolour-bar {
-    height: 4px;
-    background: linear-gradient(90deg, #FF9933 0%, #FF9933 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%, #138808 100%);
+    height: 3px;
+    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 50%, #93c5fd 100%);
   }
   .tricolour-border-top {
-    border-top: 3px solid transparent;
-    border-image: linear-gradient(90deg, #FF9933, #FFFFFF, #138808) 1;
+    border-top: 2px solid transparent;
+    border-image: linear-gradient(90deg, #1d4ed8, #3b82f6, #93c5fd) 1;
   }
 }
 

@@ -6,7 +6,7 @@ from utils.dependencies import get_current_user, require_role
 from services.ai_service import classify_complaint_task
 from models.complaint import Complaint
 from models.user import User
-from schemas.complaint import ComplaintCreate, ComplaintResponse, ComplaintAssign
+from schemas.complaint import ComplaintCreate, ComplaintResponse, ComplaintAssign, ComplaintUpdate
 import uuid
 from datetime import datetime
 import os
@@ -95,6 +95,28 @@ def assign_complaint(
     db.refresh(complaint)
     return complaint
 
+
+@router.put("/{complaint_id}", response_model=ComplaintResponse)
+def update_complaint(
+    complaint_id: uuid.UUID,
+    update_data: ComplaintUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    complaint = db.query(Complaint).filter(Complaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+        
+    if update_data.status:
+        complaint.status = update_data.status
+    if update_data.progress is not None:
+        complaint.progress = update_data.progress
+    if update_data.resolved_at:
+        complaint.resolved_at = update_data.resolved_at
+        
+    db.commit()
+    db.refresh(complaint)
+    return complaint
 
 @router.get("/public", response_model=List[ComplaintResponse])
 def get_public_complaints(db: Session = Depends(get_db)):

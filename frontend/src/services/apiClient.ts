@@ -249,6 +249,14 @@ class ApiClient {
   async healthCheck() {
     return this.request('/health', 'GET');
   }
+
+  /**
+   * GET /api/v1/users/workers
+   * Get list of field workers
+   */
+  async getWorkers() {
+    return this.request('/api/v1/users/workers', 'GET');
+  }
 }
 
 export const apiClient = new ApiClient();

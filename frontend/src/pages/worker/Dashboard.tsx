@@ -16,10 +16,11 @@ const WorkerDashboard = () => {
   const [workerTasks, setWorkerTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
+        const fetchTasks = async () => {
       try {
         const res = await apiClient.getComplaints();
-        const liveTasks = ((res.data as any[]) || []).map((c: any) => ({
+        const liveTasks = ((res.data as any[]) || [])
+          .map((c: any) => ({
           id: c.id,
           title: c.ticket_id,
           description: c.summary || c.raw_text,

@@ -25,20 +25,26 @@ const Approvals = () => {
       try {
         const response = await apiClient.getComplaints();
         if (response.data) {
-          const mapped = response.data
-            .filter((c: any) => c.status.toLowerCase() === 'awaiting-approval' || c.status.toLowerCase() === 'awaiting approval')
+          const mapped = (response.data as any[])
+            .filter((c: any) => c.status?.toLowerCase() === 'awaiting-approval' || c.status?.toLowerCase() === 'awaiting approval')
             .map((c: any) => ({
               id: c.id,
-              title: c.ticket_id,
-              description: c.summary || c.raw_text,
+              title: c.ticket_id || c.id,
+              description: c.summary || c.raw_text || 'No description',
               ward: c.ward_id || 'Unknown',
+              location: c.location || c.ward_id || 'Unknown',
               category: c.category || 'Unclassified',
               priority: 'medium' as TaskPriority,
               status: 'awaiting-approval' as TaskStatus,
-              createdAt: c.created_at,
-              updatedAt: c.updated_at,
-              completedAt: c.resolved_at,
-              assignedWorkerName: 'Unassigned',
+              deadline: c.deadline || 'Unknown',
+              progress: c.progress || 100,
+              assignedWorker: c.assigned_to || 'unassigned',
+              assignedWorkerName: c.assigned_to === 'w1' ? 'Amit Sharma' : (c.assigned_worker_name || 'Worker'),
+              createdAt: c.created_at || new Date().toISOString(),
+              updatedAt: c.updated_at || new Date().toISOString(),
+              completedAt: c.resolved_at || new Date().toISOString(),
+              publishedToPublic: false,
+              images: []
             }));
           setTasks(mapped);
         }
@@ -49,14 +55,19 @@ const Approvals = () => {
     fetchData();
   }, []);
 
-  const handleApprove = (taskId: string) => {
-    const shouldPublish = publishFlags[taskId] ?? true;
-    setTasks(prev => prev.filter(t => t.id !== taskId));
-    toast.success(
-      shouldPublish
-        ? 'Task approved and published to public dashboard'
-        : 'Task approved (not published to public)'
-    );
+  const handleApprove = async (taskId: string) => {
+    try {
+      await apiClient.updateComplaint(taskId, { status: 'Completed', resolved_at: new Date().toISOString() });
+      const shouldPublish = publishFlags[taskId] ?? true;
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      toast.success(
+        shouldPublish
+          ? 'Task approved and published to public dashboard'
+          : 'Task approved (not published to public)'
+      );
+    } catch (e) {
+      toast.error('Failed to approve task');
+    }
   };
 
   const openRejectModal = (task: Task) => {
@@ -64,15 +75,23 @@ const Approvals = () => {
     setRejectFeedback('');
   };
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (!rejectFeedback.trim()) {
       toast.error('Please provide a rejection reason');
       return;
     }
-    setTasks(prev => prev.filter(t => t.id !== rejectingTask?.id));
-    setRejectingTask(null);
-    setRejectFeedback('');
-    toast.info('Task rejected. Worker has been notified with feedback.');
+    try {
+      await apiClient.updateComplaint(rejectingTask!.id, { 
+        status: 'Rejected', 
+        politicianFeedback: rejectFeedback 
+      });
+      setTasks(prev => prev.filter(t => t.id !== rejectingTask?.id));
+      setRejectingTask(null);
+      setRejectFeedback('');
+      toast.info('Task rejected. Worker has been notified with feedback.');
+    } catch (e) {
+      toast.error('Failed to reject task');
+    }
   };
 
   const togglePublish = (taskId: string) => {

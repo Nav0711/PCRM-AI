@@ -17,6 +17,11 @@ class ComplaintAssign(BaseModel):
     assigned_to: UUID
     status: Optional[str] = "Assigned"
 
+class ComplaintUpdate(BaseModel):
+    status: Optional[str] = None
+    progress: Optional[int] = None
+    politicianFeedback: Optional[str] = None
+    resolved_at: Optional[datetime] = None
 
 class ComplaintResponse(BaseModel):
     id: UUID

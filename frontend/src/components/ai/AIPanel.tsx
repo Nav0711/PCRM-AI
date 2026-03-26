@@ -95,8 +95,8 @@ export function AIPanel() {
 
   return (
     <div className="grid lg:grid-cols-2 gap-6 h-full min-h-0 overflow-hidden">
-      {/* Left Column: Morning Briefing */}
-      <div className="flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+      {/* Left Column: Morning Briefing (hidden on small screens to keep mobile focused) */}
+      <div className="hidden lg:flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
         <div className="p-5 border-b bg-muted/30">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-primary" />

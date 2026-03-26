@@ -49,7 +49,7 @@ const PoliticianDashboard = () => {
         </div>
 
         {/* The Core AI Panel - fixed height, internal scroll */}
-        <div className="mt-0 h-[60vh] lg:h-[65vh] min-h-[320px] overflow-hidden">
+        <div className="mt-0 h-[60vh] lg:h-[75vh] min-h-[320px] overflow-hidden">
           <AIPanel />
         </div>
       </div>
