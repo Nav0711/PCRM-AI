@@ -94,9 +94,9 @@ export function AIPanel() {
   const politicianName = user?.name || POLITICIAN.name;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6 h-full min-h-0 overflow-hidden">
-      {/* Left Column: Morning Briefing (hidden on small screens to keep mobile focused) */}
-      <div className="hidden lg:flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-full min-h-0 overflow-hidden">
+      {/* Left Column: Morning Briefing */}
+      <div className="order-2 lg:order-1 flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden max-h-[30vh] sm:max-h-[28vh] lg:max-h-none">
         <div className="p-5 border-b bg-muted/30">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -150,7 +150,7 @@ export function AIPanel() {
       </div>
 
       {/* Right Column: AI Chat Interface */}
-      <div className="flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+      <div className="order-1 lg:order-2 flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden min-h-[52vh] sm:min-h-[50vh] lg:min-h-0">
         <div className="p-5 border-b bg-muted/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

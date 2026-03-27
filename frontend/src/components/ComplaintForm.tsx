@@ -14,7 +14,11 @@ interface Ward {
 
 export function ComplaintForm({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [wards, setWards] = useState<Ward[]>([]);
+  const [latitude, setLatitude] = useState<string>('');
+  const [longitude, setLongitude] = useState<string>('');
+  const [locationError, setLocationError] = useState<string>('');
   const { toast } = useToast();
   
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -25,6 +29,33 @@ export function ComplaintForm({ onSuccess }: { onSuccess?: () => void }) {
       .then(data => setWards(data))
       .catch(err => console.error("Failed to fetch wards", err));
   }, []);
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setLocating(true);
+    setLocationError('');
+
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        setLatitude(position.coords.latitude.toFixed(6));
+        setLongitude(position.coords.longitude.toFixed(6));
+        setLocating(false);
+      },
+      error => {
+        setLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError('Location permission denied. You can enter coordinates manually.');
+          return;
+        }
+        setLocationError('Unable to fetch current location. Please try again or enter manually.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,7 +85,8 @@ export function ComplaintForm({ onSuccess }: { onSuccess?: () => void }) {
       const selectedWard = wards.find(w => w.id === wardId);
       const wardName = selectedWard ? selectedWard.ward_name : 'Not specified';
 
-      const enhancedText = `${rawText}\n\n[Context - Ward: ${wardName}, Selected Category: ${category || 'Not specified'}]`;
+      const gpsContext = latitude && longitude ? `, GPS: ${latitude}, ${longitude}` : ', GPS: Not provided';
+      const enhancedText = `${rawText}\n\n[Context - Ward: ${wardName}, Selected Category: ${category || 'Not specified'}${gpsContext}]`;
 
       const complaintData = {
         citizen_name: formData.get("citizen_name"),
@@ -137,6 +169,50 @@ export function ComplaintForm({ onSuccess }: { onSuccess?: () => void }) {
           className="min-h-[100px]"
         />
       </div>
+
+      <div className="space-y-3 rounded-xl border border-border/60 p-3 bg-muted/20">
+        <div className="flex items-center justify-between gap-3">
+          <Label className="text-sm font-medium">GPS Location (Recommended)</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleUseCurrentLocation}
+            disabled={locating}
+          >
+            {locating ? 'Fetching location...' : 'Use Current Location'}
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="latitude" className="text-xs text-muted-foreground">Latitude</Label>
+            <Input
+              id="latitude"
+              name="latitude"
+              value={latitude}
+              onChange={e => setLatitude(e.target.value)}
+              placeholder="e.g. 28.613939"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="longitude" className="text-xs text-muted-foreground">Longitude</Label>
+            <Input
+              id="longitude"
+              name="longitude"
+              value={longitude}
+              onChange={e => setLongitude(e.target.value)}
+              placeholder="e.g. 77.209021"
+            />
+          </div>
+        </div>
+
+        {locationError && <p className="text-xs text-destructive">{locationError}</p>}
+        {!locationError && latitude && longitude && (
+          <p className="text-xs text-muted-foreground">Location captured: {latitude}, {longitude}</p>
+        )}
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="photo">Attach Photo (Optional)</Label>
         <Input id="photo" name="photo" type="file" accept="image/*" className="cursor-pointer file:text-primary file:font-medium" />

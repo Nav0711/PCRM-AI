@@ -53,6 +53,9 @@ export const InfiniteGridHero = ({ onFileComplaint }: InfiniteGridHeroProps) => 
         <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} />
       </div>
 
+      {/* Smooth fade-out at bottom for seamless transition */}
+      <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-b from-transparent to-background/50 dark:to-background/70 z-5" />
+
       {/* Interactive grid with mouse mask */}
       <motion.div 
         className="absolute inset-0 z-0 opacity-40 dark:opacity-30"

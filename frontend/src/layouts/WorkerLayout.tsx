@@ -80,12 +80,12 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top bar */}
-          <header className="h-16 bg-transparent px-4 md:px-8 flex items-center justify-between gap-3 shrink-0 pt-4 z-10">
-            <div className="flex items-center gap-3">
-              <button className="md:hidden p-2 -ml-2 rounded-lg hover:bg-muted" onClick={() => navigate('/worker/dashboard')}>
+          <header className="h-14 sm:h-16 bg-transparent px-3 sm:px-4 md:px-8 flex items-center justify-between gap-3 shrink-0 pt-2 sm:pt-4 z-10">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button className="md:hidden p-1.5 sm:p-2 -ml-1 sm:-ml-2 rounded-lg hover:bg-muted" onClick={() => navigate('/worker/dashboard')}>
                 <Menu className="h-5 w-5" />
               </button>
-              <h1 className="text-lg md:text-xl font-bold">{navItems.find(i => i.href === location.pathname)?.label || 'Dashboard'}</h1>
+              <h1 className="text-base sm:text-lg md:text-xl font-bold">{navItems.find(i => i.href === location.pathname)?.label || 'Dashboard'}</h1>
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <ThemeToggle />
@@ -93,7 +93,7 @@ export function WorkerLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 bg-background pt-2 md:pt-4">
             {children}
           </main>
         </div>

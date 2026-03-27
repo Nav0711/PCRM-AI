@@ -75,6 +75,37 @@ const Index = () => {
   const pending = tasks.filter(t => ['awaiting-approval', 'new'].includes(t.status)).length;
   const total = tasks.length;
 
+  const landingStats = [
+    {
+      title: 'Resolved Complaints',
+      value: completed,
+      icon: CheckCircle2,
+      iconClassName: 'bg-emerald-500/10',
+      description: 'Completed',
+    },
+    {
+      title: 'In Progress',
+      value: inProgress,
+      icon: Clock,
+      iconClassName: 'bg-blue-500/10',
+      description: 'Active',
+    },
+    {
+      title: 'Pending Review',
+      value: pending,
+      icon: AlertCircle,
+      iconClassName: 'bg-amber-500/10',
+      description: 'Awaiting',
+    },
+    {
+      title: 'Total Complaints',
+      value: total,
+      icon: Users,
+      iconClassName: 'bg-primary/10',
+      description: 'All Time',
+    },
+  ];
+
   const filteredTasks = tasks.filter(t => {
     if (wardFilter !== 'all' && t.ward !== wardFilter) return false;
     if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
@@ -85,12 +116,7 @@ const Index = () => {
   return (
     <PublicLayout>
       {/* Hero section with infinite grid background */}
-      <div className="relative">
-        <InfiniteGridHero onFileComplaint={() => setIsDialogOpen(true)} />
-        
-        {/* Bottom tricolour fade hint */}
-        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933]/30 via-blue-500/20 to-[#138808]/30" />
-      </div>
+      <InfiniteGridHero onFileComplaint={() => setIsDialogOpen(true)} />
 
       {/* Dialog for Filing Complaint */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -102,44 +128,32 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Stats section */}
-      <section className="bg-transparent relative z-20">
-        <div className="container mx-auto px-4 -mt-8">
+      {/* Stats section - seamlessly connected to hero */}
+      <section className="relative z-10 py-8 md:py-12 -mt-16 md:-mt-20 pt-24 md:pt-32 bg-gradient-to-b from-transparent to-background">
+        <div className="container mx-auto px-4">
+          <div className="flex items-end justify-between gap-3 mb-5 md:mb-6">
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Public Dashboard Snapshot</h2>
+            <p className="text-xs md:text-sm text-muted-foreground">Live stats from complaint activity</p>
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
-              <StatCard title="Works Completed" value={completed} icon={CheckCircle2} iconClassName="bg-[#138808]/10" description="✓ Resolved" />
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <StatCard title="In Progress" value={inProgress} icon={Clock} iconClassName="bg-blue-500/10" description="Active" />
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
-              <StatCard title="Pending Review" value={pending} icon={AlertCircle} iconClassName="bg-[#FF9933]/10" description="Awaiting" />
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <StatCard title="Total Complaints" value={total} icon={Users} iconClassName="bg-primary/10" description="All time" />
-            </div>
+            {landingStats.map(stat => (
+              <StatCard
+                key={stat.title}
+                title={stat.title}
+                value={stat.value}
+                icon={stat.icon}
+                iconClassName={stat.iconClassName}
+                description={stat.description}
+                className="h-full border border-border/70 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+              />
+            ))}
           </div>
         </div>
       </section>
 
       {/* Feature promises */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { icon: Eye, title: 'Full Transparency', desc: 'Track every complaint from submission to resolution in real-time.', color: '#FF9933' },
-            { icon: Shield, title: 'AI-Powered Triage', desc: 'Complaints are automatically categorized and prioritized using PSRM-AI.', color: '#000080' },
-            { icon: Megaphone, title: 'Your Voice Matters', desc: 'Every citizen complaint is heard, assigned, and actioned upon.', color: '#138808' },
-          ].map((feature, i) => (
-            <div key={i} className="stat-card group cursor-default" style={{ animationDelay: `${0.2 * i}s` }}>
-              <div className="h-12 w-12 rounded-2xl flex items-center justify-center mb-4 transition-colors" style={{ backgroundColor: `${feature.color}15` }}>
-                <feature.icon className="h-6 w-6" style={{ color: feature.color }} />
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-foreground">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      
 
       {/* Latest Updates */}
       <section id="updates" className="container mx-auto px-4 py-8">

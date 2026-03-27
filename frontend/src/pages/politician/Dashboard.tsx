@@ -32,7 +32,7 @@ const PoliticianDashboard = () => {
   return (
     <PoliticianLayout>
       <div className="space-y-4">
-        <div className="bg-muted/40 rounded-lg p-3 relative overflow-hidden border border-border/40">
+        <div className="hidden sm:block bg-muted/40 rounded-lg p-3 relative overflow-hidden border border-border/40">
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#FF9933]/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#138808]/8 rounded-full blur-3xl pointer-events-none"></div>
           <div className="relative z-10">
@@ -40,16 +40,16 @@ const PoliticianDashboard = () => {
           </div>
 
           {/* Top Stats Retained for Quick Look */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3 relative z-10">
-            <StatCard title="Total Assigned Works" value={tasksCount.total} icon={ClipboardList} description="Lifetime tracked" iconClassName="bg-[#FF9933]/10" />
-            <StatCard title="In Progress" value={tasksCount.inProgress} icon={Clock} iconClassName="bg-blue-500/10" description="Active now" />
-            <StatCard title="Pending Approval" value={tasksCount.pending} icon={AlertCircle} iconClassName="bg-[#FF9933]/10" description="Awaiting action" />
-            <StatCard title="Completed" value={tasksCount.completed} icon={CheckCircle2} iconClassName="bg-[#138808]/10" description="Successfully resolved" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mt-3 relative z-10">
+            <StatCard className="p-3 sm:p-4" title="Total Assigned Works" value={tasksCount.total} icon={ClipboardList} description="Lifetime tracked" iconClassName="bg-[#FF9933]/10" />
+            <StatCard className="p-3 sm:p-4" title="In Progress" value={tasksCount.inProgress} icon={Clock} iconClassName="bg-blue-500/10" description="Active now" />
+            <StatCard className="p-3 sm:p-4" title="Pending Approval" value={tasksCount.pending} icon={AlertCircle} iconClassName="bg-[#FF9933]/10" description="Awaiting action" />
+            <StatCard className="p-3 sm:p-4" title="Completed" value={tasksCount.completed} icon={CheckCircle2} iconClassName="bg-[#138808]/10" description="Successfully resolved" />
           </div>
         </div>
 
         {/* The Core AI Panel - fixed height, internal scroll */}
-        <div className="mt-0 h-[60vh] lg:h-[75vh] min-h-[320px] overflow-hidden">
+        <div className="mt-0 h-[88vh] sm:h-[82vh] lg:h-[75vh] min-h-[560px] lg:min-h-[320px] overflow-hidden">
           <AIPanel />
         </div>
       </div>
