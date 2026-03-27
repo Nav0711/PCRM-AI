@@ -109,7 +109,58 @@ def generate_morning_briefing(stats: dict):
     except:
         return {"ai_summary": "Briefing generation failed.", "trend_alert": "No alerts."}
 
+def identify_assignment_intent(message: str, context_data: str):
+    prompt = f"""
+    Analyze the user's message and the provided database context to identify which complaint (Ticket ID) they want to assign and to which worker.
+    
+    Database Context (Recent Complaints & Workers):
+    {context_data}
+    
+    User Message: "{message}"
+    
+    Return ONLY a JSON object:
+    {{
+      "ticket_id": "CMP-XXXXX (the identified ticket id or null)",
+      "worker_name": "Name of the identified worker or null",
+      "description": "A short, 1-2 sentence instruction or task note derived from the user's message, directed at the worker (or null)",
+      "found": boolean (true if you confidently matched BOTH a ticket and a worker based on the context, else false)
+    }}
+    """
+    try:
+        response = model.generate_content(prompt)
+        text_resp = response.text.strip()
+        if "```json" in text_resp:
+            text_resp = text_resp.split("```json")[-1].split("```")[0]
+        return json.loads(text_resp)
+    except:
+        return {"found": False}
+
 def chat_with_data(message: str, history: list, query_type: str, context_data: str = ""):
-    prompt = f"You are an AI Co-Pilot for a politician. Context data: {context_data}. User message: {message}. Query type: {query_type}."
+    history_str = ""
+    for msg in history:
+        role = getattr(msg, "role", "user") if not isinstance(msg, dict) else msg.get("role", "user")
+        content = getattr(msg, "content", "") if not isinstance(msg, dict) else msg.get("content", "")
+        history_str += f"{role.upper()}: {content}\n\n"
+        
+    prompt = f"""
+You are PSRM-AI, a strictly guarded AI Co-Pilot for a politician or field worker managing a constituency.
+You MUST follow these rules (GUARDRAILS):
+1. You may ONLY answer questions related to the provided Database Context below, OR help the user with the system's features (such as generating speeches, briefings, or media responses based on the data).
+2. If the user asks a general knowledge question, trivia, coding help, or anything unrelated to the database or the constituency management platform, you MUST politely refuse to answer. State that you are restricted to constituency database inquiries.
+3. Be concise and professional. Do not use markdown asterisks.
+4. IMPORTANT: Always provide multiple items (like lists of complaints, workers, or tasks) as a clear, bulleted or numbered list. Each item should be on a new line.
+
+### Database Context:
+{context_data}
+
+### Chat History:
+{history_str}
+
+### Current User Message:
+{message}
+
+Please respond to the Current User Message following the Guardrails.
+"""
     response = model.generate_content(prompt)
     return response.text
+

@@ -25,48 +25,113 @@ export function beautifyAIResponse(text: string): string {
     .replace(/\*\*/g, '')
     // Remove single asterisks (*)
     .replace(/\*/g, '')
+    // Ensure lists (Bullet points, dashes, numbers) have proper newlines
+    .replace(/(\n|^)(\s*)([•\-\*]|\d+\.)(\s+)/g, '$1$2$3$4')
+    // Fix common case where AI misses newline before a list item
+    .replace(/([^.\n])(\s+)([•\-\*]|\d+\.)(\s+)/g, '$1\n$3$4')
     // Clean up excessive newlines (more than 2)
     .replace(/\n{3,}/g, '\n\n')
     // Trim leading/trailing whitespace
     .trim();
 }
 
-function buildSystemContext(): string {
-  const total = mockTasks.length;
-  const inProgress = mockTasks.filter(t => t.status === 'in-progress');
-  const awaiting = mockTasks.filter(t => t.status === 'awaiting-approval');
-  const completed = mockTasks.filter(t => t.status === 'completed');
-  const overdue = mockTasks.filter(t => new Date(t.deadline) < new Date() && t.status !== 'completed');
+function buildPoliticianContext(liveComplaints?: any[]): string {
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  
+  const tasks = liveComplaints || mockTasks;
+  const total = tasks.length;
+  const inProgress = tasks.filter((t: any) => (t.status || '').toLowerCase() === 'in-progress' || (t.status || '').toLowerCase() === 'in progress');
+  const awaiting  = tasks.filter((t: any) => (t.status || '').toLowerCase().includes('awaiting'));
+  const completed = tasks.filter((t: any) => (t.status || '').toLowerCase() === 'completed' || (t.status || '').toLowerCase() === 'done');
+  const newTasks  = tasks.filter((t: any) => (t.status || '').toLowerCase() === 'new' || (t.status || '').toLowerCase() === 'unassigned');
 
-  return `Current constituency data for ${POLITICIAN.name} (${POLITICIAN.constituency}):
+  return `You are PSRM-AI, a highly intelligent and concise AI Co-Pilot embedded inside the PSRM-AI (Public Smart Relation Management System with AI) platform.
 
-TASKS SUMMARY:
-- Total tasks: ${total}
-- In Progress: ${inProgress.length}
-- Awaiting Approval: ${awaiting.length}
+YOUR USER: An elected Indian politician / MLA managing constituency public works.
+PLATFORM: PSRM-AI — a CRM for politician-to-field-worker task management and citizen complaint resolution.
+TODAY: ${today}
+
+LIVE CONSTITUENCY DATA:
+- Total complaints/tasks in system: ${total}
+- Currently In Progress: ${inProgress.length}
+- Awaiting your Approval: ${awaiting.length} — these need your review NOW
+- Completed / Resolved: ${completed.length}
+- New / Unassigned: ${newTasks.length}
+
+PENDING APPROVALS (tasks waiting for politician's action):
+${awaiting.slice(0, 5).map((t: any) => `  • "${t.summary || t.ticket_id || t.title}" — Category: ${t.category || 'Unknown'}, Notes: ${t.resolution_note || 'No worker notes'}`).join('\n') || '  (None currently)'}
+
+IN-PROGRESS TASKS:
+${inProgress.slice(0, 5).map((t: any) => `  • "${t.summary || t.ticket_id || t.title}" — Category: ${t.category || 'Unknown'}`).join('\n') || '  (None currently)'}
+
+FIELD WORKERS:
+${mockWorkers.map(w => `  • ${w.name} — Ward: ${w.ward}, Active: ${w.activeTasks} tasks, Completed: ${w.completedTasks}`).join('\n')}
+
+YOUR CAPABILITIES:
+- Draft speeches about constituency achievements
+- Write media responses and press releases
+- Summarize pending works and approvals
+- Analyze worker performance
+- Explain how to approve/reject tasks in PSRM-AI
+- Answer questions about the platform workflow
+
+RESPONSE STYLE: Be direct, concise, and professional. Speak as a trusted advisor to the politician. Reference real numbers from the data above. Use plain language — no markdown asterisks.`;
+}
+
+function buildWorkerContext(liveComplaints?: any[], workerName?: string): string {
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  const tasks = liveComplaints || mockTasks.filter(t => t.assignedWorker === 'w1');
+  const total = tasks.length;
+  const inProgress = tasks.filter((t: any) => (t.status || '').toLowerCase().includes('progress'));
+  const awaiting   = tasks.filter((t: any) => (t.status || '').toLowerCase().includes('awaiting'));
+  const completed  = tasks.filter((t: any) => (t.status || '').toLowerCase() === 'completed' || (t.status || '').toLowerCase() === 'done');
+
+  return `You are PSRM-AI, an intelligent AI assistant embedded in the PSRM-AI Field Worker Portal.
+
+YOUR USER: ${workerName || 'A field worker'} — a ground-level government field worker responsible for resolving citizen complaints.
+PLATFORM: PSRM-AI — a CRM where politicians assign tasks to field workers, who complete them and appeal for approval.
+TODAY: ${today}
+
+MY ASSIGNED TASKS SUMMARY:
+- Total tasks assigned to me: ${total}
+- Currently In Progress: ${inProgress.length}
+- Awaiting politician approval: ${awaiting.length}
 - Completed: ${completed.length}
-- Overdue tasks: ${overdue.length}
 
-PENDING APPROVALS:
-${awaiting.map(t => `• "${t.title}" by ${t.assignedWorkerName}, Ward: ${t.ward}, Submitted: ${t.completedAt || t.updatedAt}`).join('\n') || '(none)'}
+MY CURRENT TASKS:
+${tasks.slice(0, 6).map((t: any) => `  • "${t.summary || t.ticket_id || t.title}" — Status: ${t.status || 'New'}, Category: ${t.category || 'General'}, Notes: ${t.resolution_note || 'None yet'}`).join('\n') || '  (No tasks currently assigned)'}
 
-OVERDUE TASKS:
-${overdue.map(t => `• "${t.title}" assigned to ${t.assignedWorkerName}, Deadline: ${t.deadline}, Progress: ${t.progress}%`).join('\n') || '(none)'}
+HOW THE WORKFLOW WORKS:
+1. Politician assigns a complaint/task to me
+2. I work on it in the field
+3. When done, I go to "Assigned Work" and click "Submit Progress / Appeal"
+4. I write my completion notes and submit
+5. The status changes to "Awaiting Approval" and the politician reviews it
+6. If approved, it's marked Completed. If rejected, I get feedback and try again
+7. I can also "Propose Work" from the dashboard to suggest new tasks to the politician
 
-WORKERS:
-${mockWorkers.map(w => `• ${w.name} — Ward: ${w.ward}, Active: ${w.activeTasks}, Completed: ${w.completedTasks}, Avg: ${w.avgCompletionDays || '?'} days`).join('\n')}`;
+WHAT I CAN HELP WITH:
+- Draft daily progress reports
+- Write completion notes for task approval
+- Compose professional messages to supervisor/politician
+- Summarize my workload and priorities
+- Advise how to handle delayed or blocked tasks
+- Explain the PSRM-AI platform workflow
+
+RESPONSE STYLE: Be practical, supportive, and concise. Speak in a friendly but professional tone. Help the worker do their job efficiently. No asterisks or markdown symbols.`;
 }
 
 // ---- Mock AI response generators ----
 
 const MOCK_RESPONSES: Record<string, string> = {
-  'overdue': `Based on your current data, here are the most urgent overdue items:\n\n🔴 **Drainage System Repair** — Ward 5 - West\n- Assigned to Rajiv Singh\n- Deadline was March 5, 2026\n- Progress: 0% — Work hasn't started yet\n- **Recommendation:** Contact Rajiv immediately. This is a flooding risk.\n\n⚠️ **Street Light Installation** — Ward 4 - East\n- Assigned to Lakshmi Devi\n- Deadline: March 10, 2026 (approaching)\n- Progress: 40%\n- **Recommendation:** Check if additional resources are needed to meet deadline.`,
+  'overdue': `Based on your current data, here are the most urgent overdue items:\n\nDrainage System Repair — Ward 5 - West\n- Assigned to Rajiv Singh\n- Progress: 0% — Work hasn't started yet\n- Recommendation: Contact Rajiv immediately. This is a flooding risk.\n\nStreet Light Installation — Ward 4 - East\n- Approaching deadline, Progress: 40%\n- Recommendation: Check if additional resources are needed to meet deadline.`,
 
-  'approval': `You have **1 task** pending your approval:\n\n✅ **Community Park Development** — Ward 3 - South\n- Worker: Suresh Reddy\n- Submitted: Feb 22, 2026\n- Notes: "Park construction complete. Playground equipment installed and pathways paved."\n- **Recommendation:** This looks ready for approval. Suresh has completed all stated deliverables. Consider publishing to the public dashboard since it's a visible community improvement.`,
+  'approval': `You have tasks pending your approval.\n\nCommunity Park Development — Ward 3 - South\n- Worker: Suresh Reddy\n- Notes: "Park construction complete. Playground equipment installed and pathways paved."\n- Recommendation: This looks ready for approval.`,
 
-  'performance': `Here's your team performance summary:\n\n🏆 **Top Performer: Priya Patel**\n- 18 tasks completed, Avg 5 days — Fastest on the team\n- Currently handling Water Pipeline (65%) and School Renovation (30%)\n\n👍 **Lakshmi Devi** — 22 completed, Avg 6 days\n- Reliable and consistent. Only 1 active task currently.\n\n📊 **Amit Sharma** — 12 completed, Avg 8 days\n- Solid output. 3 active tasks is manageable.\n\n⚠️ **Suresh Reddy** — 9 completed, Avg 12 days\n- Slowest completion time. Had 1 rejection (Health Camp). May need closer oversight.\n\n⚠️ **Rajiv Singh** — 15 completed, Avg 9 days\n- Good track record but Drainage task at 0% is concerning.`,
+  'performance': `Your team performance summary:\n\nTop Performer: Priya Patel\n- 18 tasks completed, Avg 5 days\n\nLakshmi Devi — 22 completed, Avg 6 days — Reliable and consistent.\n\nAmit Sharma — 12 completed, Avg 8 days.\n\nSuresh Reddy — 9 completed, Avg 12 days — May need closer oversight.`,
 
-  'feedback': `Here's a template you can use for rejection feedback:\n\n---\n\n**Task:** [Task Name]\n**Decision:** Requires Revision\n\nDear [Worker Name],\n\nThank you for your work on this task. After review, I've identified the following areas that need attention before approval:\n\n1. **[Specific issue]** — [What needs to change]\n2. **[Missing documentation]** — [What's needed]\n\nPlease address these points and resubmit. Feel free to reach out if you need clarification.\n\nRegards,\n${POLITICIAN.name}\n\n---\n\nWould you like me to customize this for a specific task?`,
+  'feedback': `Rejection feedback template:\n\nTask: [Task Name]\nDecision: Requires Revision\n\nDear [Worker Name],\n\nThank you for your work on this task. After review, I've identified areas that need attention before approval:\n\n1. [Specific issue] — [What needs to change]\n2. [Missing documentation] — [What's needed]\n\nPlease address these points and resubmit.\n\nRegards,\n${POLITICIAN.name}`,
 };
 
 function getDefaultResponse(message: string, detailed = false): string {
@@ -90,7 +155,9 @@ function getDefaultResponse(message: string, detailed = false): string {
 export async function sendChatMessage(
   messages: ChatMessage[],
   queryType: string = 'general',
-  userRole: string = 'Politician'
+  userRole: string = 'Politician',
+  liveComplaints?: any[],
+  userName?: string
 ): Promise<{ reply: string }> {
   try {
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
@@ -99,17 +166,17 @@ export async function sendChatMessage(
     // Determine if user is requesting detail
     const wantsDetail = /\b(detail|explain|full|list|elaborate|describe|breakdown|summarize)\b/i.test(messageContent);
 
-    // System instruction for conciseness injected as history prefix
-    const roleString = userRole === 'FieldWorker' 
-      ? 'a field worker managing assigned tasks and field operations' 
-      : 'a politician managing constituency complaints and approvals';
+    // Build a rich, role-specific system context
+    const systemContext = userRole === 'FieldWorker'
+      ? buildWorkerContext(liveComplaints, userName)
+      : buildPoliticianContext(liveComplaints);
     
-    const systemInstruction = wantsDetail
-      ? `You are a helpful AI assistant acting as a Copilot for ${roleString}. The user is requesting detailed information — provide a thorough, structured response. Use your predefined context about PSRM-AI and the user's role to assist them.`
-      : `You are a helpful AI assistant acting as a Copilot for ${roleString}. Be concise and conversational. Reply in 2-4 short sentences unless the user asks for details or uses words like explain, list, or describe. Do not include unsolicited bullet points or headers. Base answers on their role.`;
+    const conciseSuffix = wantsDetail
+      ? '\n\nThe user is requesting detailed information — provide a thorough, structured response.'
+      : '\n\nBe concise and conversational. Reply in 2-4 sentences max unless the user explicitly asks for details or uses words like explain, list, describe, or summarize.';
 
     const historyWithSystem = [
-      { role: 'assistant' as const, content: systemInstruction },
+      { role: 'assistant' as const, content: systemContext + conciseSuffix },
       ...messages.map(m => ({ role: m.role, content: m.content })),
     ];
     

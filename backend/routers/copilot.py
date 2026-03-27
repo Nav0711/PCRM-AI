@@ -1,4 +1,7 @@
 from fastapi import APIRouter, Depends
+import re
+import uuid
+from typing import Optional
 from sqlalchemy.orm import Session
 from utils.database import get_db
 from utils.dependencies import get_current_user, require_role
@@ -6,7 +9,7 @@ from models.user import User
 from models.complaint import Complaint
 from models.briefing import Briefing
 from schemas.copilot import ChatRequest, BriefingResponse
-from services.ai_service import chat_with_data, generate_morning_briefing
+from services.ai_service import chat_with_data, generate_morning_briefing, identify_assignment_intent
 from datetime import date, datetime, timedelta
 from sqlalchemy import func
 
@@ -71,6 +74,113 @@ def chat(request: ChatRequest, db: Session = Depends(get_db), current_user: User
         
         resolved_str = ", ".join([f"{count} {cat} issues" for cat, count in resolved_recent])
         context_data = f"Accomplishments in last 30 days: Resolved {resolved_str}."
+
+    elif request.query_type in ["pending_complaints", "pending", "complaints"]:
+        pending_statuses = ["New", "Acknowledged", "In Progress", "Assigned"]
+        complaints = (
+            db.query(Complaint)
+            .filter(
+                Complaint.status.in_(pending_statuses),
+                Complaint.constituency_id == current_user.constituency_id,
+            )
+            .order_by(Complaint.created_at.desc())
+            .limit(20)
+            .all()
+        )
+
+        worker_ids = {c.assigned_to for c in complaints if c.assigned_to}
+        workers_by_id = {}
+        if worker_ids:
+            workers = db.query(User).filter(User.id.in_(worker_ids)).all()
+            workers_by_id = {w.id: w.name for w in workers}
+
+        if not complaints:
+            context_data = "No pending complaints found for your constituency."
+        else:
+            lines = ["Pending complaints (showing latest 20):"]
+            for c in complaints:
+                assignee = workers_by_id.get(c.assigned_to)
+                lines.append(
+                    f"• {c.ticket_id} — {c.summary or c.raw_text[:80]} (Status: {c.status}, Priority: {c.priority}{', Assigned to: ' + assignee if assignee else ''})"
+                )
+            context_data = "\n".join(lines)
+            
+        # Let the code fall through to `chat_with_data` below to format the `context_data`.
+
+    elif request.query_type == "assign":
+        # First query recent open complaints and available workers to build context
+        recent_complaints = db.query(Complaint).filter(
+            Complaint.constituency_id == current_user.constituency_id,
+            Complaint.status.in_(["New", "Acknowledged", "In Progress"])
+        ).order_by(Complaint.created_at.desc()).limit(20).all()
+
+        workers = db.query(User).filter(
+            User.role == "FieldWorker",
+            User.constituency_id == current_user.constituency_id,
+        ).all()
+
+        context_lines = ["Recent open complaints:"]
+        for c in recent_complaints:
+            context_lines.append(f"Ticket: {c.ticket_id}, Category: {c.category}, Summary: {c.summary or c.raw_text[:50]}")
+
+        context_lines.append("\nAvailable Workers:")
+        for w in workers:
+            context_lines.append(f"Name: {w.name}, ID: {w.id}")
+            
+        context_data = "\n".join(context_lines)
+
+        intent = identify_assignment_intent(request.message, context_data)
+
+        if not intent.get("found") or not intent.get("ticket_id") or not intent.get("worker_name"):
+            return {"response": "I couldn't clearly identify which complaint to assign or to whom. Please mention the issue description and the worker's name."}
+
+        ticket_id = intent.get("ticket_id")
+        worker_name = intent.get("worker_name")
+        description = intent.get("description")
+
+        complaint = db.query(Complaint).filter(
+            Complaint.ticket_id == ticket_id, 
+            Complaint.constituency_id == current_user.constituency_id
+        ).first()
+        
+        worker = next((w for w in workers if w.name.lower() == worker_name.lower() or str(w.id) == worker_name), None)
+
+        if not complaint:
+            return {"response": f"I understood you wanted to assign {ticket_id}, but I couldn't find it actively open in your constituency."}
+
+        if not worker:
+            return {"response": f"I understood you wanted to assign this to {worker_name}, but I couldn't find a worker by that name."}
+
+        if complaint.status in ["Resolved", "Closed"]:
+            return {"response": f"Complaint {complaint.ticket_id} is already {complaint.status} and cannot be reassigned."}
+
+        complaint.assigned_to = worker.id
+        complaint.status = "Assigned"
+        if description:
+            complaint.resolution_note = f"Assignment Note: {description}"
+
+        db.commit()
+        db.refresh(complaint)
+
+        res_msg = f"I've successfully assigned {complaint.ticket_id} ({complaint.category}) to {worker.name}."
+        if description:
+            res_msg += f" Note attached: '{description}'"
+        return {"response": res_msg}
+
+    if not context_data or request.query_type == "general":
+        recent_complaints = db.query(Complaint).filter(
+            Complaint.constituency_id == current_user.constituency_id
+        ).order_by(Complaint.created_at.desc()).limit(50).all()
+        
+        lines = ["Recent Constituency Database Records:"]
+        for c in recent_complaints:
+            lines.append(f"- Ticket: {c.ticket_id}, Category: {c.category}, Status: {c.status}, Summary: {c.summary or c.raw_text[:50]}, Priority: {c.priority}")
+        db_context = "\n".join(lines)
+        
+        if not context_data:
+            context_data = db_context
+        else:
+            context_data += "\n\n" + db_context
 
     response_text = chat_with_data(request.message, request.history, request.query_type, context_data)
     return {"response": response_text}

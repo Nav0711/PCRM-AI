@@ -1,9 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Landmark, Loader2, AlertCircle, Menu, X } from 'lucide-react';
+import { Landmark, Loader2, AlertCircle, User, ShieldCheck, Menu, X } from 'lucide-react';
 import { motion, useMotionValue, useMotionTemplate, useAnimationFrame } from 'framer-motion';
-import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const GridPattern = ({ offsetX, offsetY }: { offsetX: any; offsetY: any }) => {
@@ -11,7 +9,7 @@ const GridPattern = ({ offsetX, offsetY }: { offsetX: any; offsetY: any }) => {
     <svg className="w-full h-full">
       <defs>
         <motion.pattern
-          id="grid-pattern-login"
+          id="grid-pattern-signup"
           width="40"
           height="40"
           patternUnits="userSpaceOnUse"
@@ -27,19 +25,24 @@ const GridPattern = ({ offsetX, offsetY }: { offsetX: any; offsetY: any }) => {
           />
         </motion.pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#grid-pattern-login)" />
+      <rect width="100%" height="100%" fill="url(#grid-pattern-signup)" />
     </svg>
   );
 };
 
-const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+const Signup = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    aadhaar: '',
+    role: 'worker',
+    password: '',
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -64,27 +67,26 @@ const Login = () => {
 
   const maskImage = useMotionTemplate`radial-gradient(300px circle at ${mouseX}px ${mouseY}px, black, transparent)`;
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setLoading(true);
-    setLoadingMessage('Connecting to server...');
     
     try {
-      const success = await login(username, password);
-      if (success) {
-        setLoadingMessage('Login successful, redirecting...');
-        setTimeout(() => navigate('/politician/dashboard'), 500);
-      } else {
-        setError('Invalid credentials. Please try again.');
-      }
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setSuccessMsg('Registration successful! Redirecting to login...');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Login failed. Please try again.';
-      setError(errorMsg);
-      console.error('Login error:', errorMsg);
+      setError('Registration failed. Please try again.');
     } finally {
-      setLoading(false);
-      setLoadingMessage('');
+      if (!successMsg) setLoading(false);
     }
   };
 
@@ -170,8 +172,8 @@ const Login = () => {
           <div className="absolute left-[-5%] bottom-[-15%] w-[30%] h-[30%] rounded-full bg-green-500/25 dark:bg-green-600/10 blur-[120px]" />
         </div>
 
-        {/* Login form card - centered */}
-        <div className="relative z-10 w-full max-w-md">
+        {/* Signup form card - centered with max-height for scrolling */}
+        <div className="relative z-10 w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="bg-card rounded-2xl border border-border/70 shadow-lg p-8 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-8">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -179,73 +181,115 @@ const Login = () => {
               </div>
               <div>
                 <p className="text-lg font-bold tracking-tight text-foreground">PSRM-AI</p>
-                <p className="text-xs text-muted-foreground font-medium">Sign In</p>
+                <p className="text-xs text-muted-foreground font-medium">Create Account</p>
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold mb-1 text-foreground">Welcome back</h1>
-            <p className="text-sm text-muted-foreground mb-8">Sign in to manage constituency work</p>
+            <h1 className="text-2xl font-bold mb-1 text-foreground">Create an Account</h1>
+            <p className="text-sm text-muted-foreground mb-8">Register to start managing constituency work</p>
 
-            {/* Demo Credentials */}
-            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 mb-6">
-              <p className="text-xs font-semibold text-primary mb-3 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                Demo Credentials
-              </p>
-              
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('rajesh@example.com');
-                    setPassword('password');
-                  }}
-                  className="w-full bg-background rounded-xl p-3 border border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all text-left active:scale-95"
-                >
-                  <p className="text-xs font-medium text-foreground">Politician</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    <span className="font-mono text-foreground/80">rajesh@example.com</span> / <span className="font-mono text-foreground/80">password</span>
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('amit@example.com');
-                    setPassword('password');
-                  }}
-                  className="w-full bg-background rounded-xl p-3 border border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all text-left active:scale-95"
-                >
-                  <p className="text-xs font-medium text-foreground">Worker</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    <span className="font-mono text-foreground/80">amit@example.com</span> / <span className="font-mono text-foreground/80">password</span>
-                  </p>
-                </button>
-              </div>
-            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-foreground">Phone or Email</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  placeholder="Enter your phone number or email"
-                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                  required
-                  disabled={loading}
-                />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-foreground">Full Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-foreground">Phone Number</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+91 9876543210"
+                    className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-foreground">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="john@example.com"
+                    className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-foreground">Aadhaar Number</label>
+                  <input
+                    type="text"
+                    name="aadhaar"
+                    value={formData.aadhaar}
+                    onChange={handleChange}
+                    placeholder="1234 5678 9012"
+                    className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2 text-foreground">Password</label>
+                <label className="block text-sm font-medium mb-2 text-foreground">Designation / Role</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${formData.role === 'worker' ? 'bg-primary/5 border-primary ring-1 ring-primary/20' : 'bg-background hover:bg-muted/50'}`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="worker"
+                      checked={formData.role === 'worker'}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <User className={`h-5 w-5 ${formData.role === 'worker' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div>
+                      <p className="text-sm font-semibold">Worker</p>
+                      <p className="text-xs text-muted-foreground">Field agent</p>
+                    </div>
+                  </label>
+                  <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${formData.role === 'politician' ? 'bg-primary/5 border-primary ring-1 ring-primary/20' : 'bg-background hover:bg-muted/50'}`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="politician"
+                      checked={formData.role === 'politician'}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <ShieldCheck className={`h-5 w-5 ${formData.role === 'politician' ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div>
+                      <p className="text-sm font-semibold">Politician</p>
+                      <p className="text-xs text-muted-foreground">MLA / MP</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5 text-foreground">Password</label>
                 <input
                   type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Create a strong password"
+                  className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                   required
-                  disabled={loading}
                 />
               </div>
 
@@ -256,34 +300,34 @@ const Login = () => {
                 </div>
               )}
 
-              {loading && loadingMessage && (
-                <div className="flex items-center gap-2 bg-primary/5 border border-primary/10 rounded-xl p-3">
-                  <Loader2 className="h-4 w-4 text-primary animate-spin" />
-                  <p className="text-sm text-primary">{loadingMessage}</p>
+              {successMsg && (
+                <div className="flex items-start gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <p className="text-sm text-emerald-600 font-medium">{successMsg}</p>
                 </div>
               )}
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                disabled={loading || !!successMsg}
+                className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 mt-2"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? 'Registering...' : 'Complete Registration'}
               </button>
               
               <div className="text-center mt-6">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{' '}
-                  <Link to="/signup" className="text-primary font-semibold hover:underline">
-                    Sign up
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-primary font-semibold hover:underline">
+                    Sign in
                   </Link>
                 </p>
               </div>
             </form>
 
             <p className="text-xs text-muted-foreground text-center mt-8">
-              PSRM-AI — Public Smart Relation Management System with AI 🇮🇳
+              PSRM-AI — Secure & Authorized Access Only 🇮🇳
             </p>
           </div>
         </div>
@@ -292,4 +336,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

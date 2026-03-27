@@ -45,6 +45,16 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
 
   const [briefing, setBriefing] = useState<any>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
+  const [liveComplaints, setLiveComplaints] = useState<any[]>([]);
+
+  // Fetch live worker tasks once on open
+  useEffect(() => {
+    if (open && liveComplaints.length === 0) {
+      apiClient.getComplaints().then(res => {
+        if (res.data) setLiveComplaints(res.data as any[]);
+      }).catch(() => { /* fall back to mock */ });
+    }
+  }, [open]);
 
   // Load messages from localStorage on mount
   useEffect(() => {
@@ -132,12 +142,14 @@ export function ChatDrawer({ open, onClose, initialMessage }: ChatDrawerProps) {
 
     let queryType = 'general';
     const lowerMsg = msg.toLowerCase();
-    if (lowerMsg.includes('speech')) queryType = 'speech';
+    if (lowerMsg.includes('assign')) queryType = 'assign';
+    else if (lowerMsg.includes('pending complaint') || lowerMsg.includes('list complaints') || lowerMsg.includes('open complaints')) queryType = 'pending_complaints';
+    else if (lowerMsg.includes('speech')) queryType = 'speech';
     else if (lowerMsg.includes('media')) queryType = 'media';
     else if (lowerMsg.includes('data') || lowerMsg.includes('overview') || lowerMsg.includes('stats')) queryType = 'data';
 
     try {
-      const { reply } = await sendChatMessage(newMessages, queryType, user?.role);
+      const { reply } = await sendChatMessage(newMessages, queryType, user?.role, liveComplaints, user?.name);
       setMessages(prev => [...prev, { role: 'assistant', content: reply, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
     } catch {
       setError('Unable to get a response. Please try again.');

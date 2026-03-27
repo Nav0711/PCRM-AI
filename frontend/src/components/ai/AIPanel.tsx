@@ -17,6 +17,7 @@ const STARTER_CHIPS = [
 export function AIPanel() {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [mobilePanel, setMobilePanel] = useState<'chat' | 'briefing'>('chat');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +26,19 @@ export function AIPanel() {
 
   const [briefing, setBriefing] = useState<any>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
+  const [liveComplaints, setLiveComplaints] = useState<any[]>([]);
 
   useEffect(() => {
     fetchBriefing();
+    fetchLiveComplaints();
   }, []);
+
+  const fetchLiveComplaints = async () => {
+    try {
+      const res = await apiClient.getComplaints();
+      if (res.data) setLiveComplaints(res.data as any[]);
+    } catch { /* use mock fallback */ }
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -70,12 +80,20 @@ export function AIPanel() {
 
     let queryType = 'general';
     const lowerMsg = msg.toLowerCase();
-    if (lowerMsg.includes('speech')) queryType = 'speech';
+    
+    // Explicitly check for "assign ... to ..." or just "assign"
+    if (lowerMsg.includes('assign') || (lowerMsg.includes('to') && (lowerMsg.includes('cmp-') || lowerMsg.includes('ticket')))) {
+      queryType = 'assign';
+    } 
+    else if (lowerMsg.includes('speech')) queryType = 'speech';
     else if (lowerMsg.includes('media')) queryType = 'media';
     else if (lowerMsg.includes('data') || lowerMsg.includes('overview') || lowerMsg.includes('stats')) queryType = 'data';
+    else if (lowerMsg.includes('complaint') || lowerMsg.includes('ticket') || lowerMsg.includes('issue') || lowerMsg.includes('task')) {
+      queryType = 'pending_complaints';
+    }
 
     try {
-      const { reply } = await sendChatMessage(newMessages, queryType);
+      const { reply } = await sendChatMessage(newMessages, queryType, 'Politician', liveComplaints, user?.name);
       setMessages(prev => [...prev, { role: 'assistant', content: reply, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
     } catch {
       setError('Unable to get a response. Please try again.');
@@ -94,36 +112,64 @@ export function AIPanel() {
   const politicianName = user?.name || POLITICIAN.name;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-full min-h-0 overflow-hidden">
+    <div className="flex flex-col lg:grid lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 h-full min-h-0 overflow-hidden">
+      {/* Mobile panel switcher */}
+      <div className="lg:hidden grid grid-cols-2 gap-2 bg-muted/30 p-1 rounded-xl border border-border/60 shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobilePanel('chat')}
+          className={cn(
+            'h-9 rounded-lg text-sm font-medium transition-colors',
+            mobilePanel === 'chat' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-muted'
+          )}
+        >
+          AI Chat
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobilePanel('briefing')}
+          className={cn(
+            'h-9 rounded-lg text-sm font-medium transition-colors',
+            mobilePanel === 'briefing' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-muted'
+          )}
+        >
+          Briefing
+        </button>
+      </div>
+
       {/* Left Column: Morning Briefing */}
-      <div className="order-2 lg:order-1 flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden max-h-[30vh] sm:max-h-[28vh] lg:max-h-none">
-        <div className="p-5 border-b bg-muted/30">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold tracking-tight">Morning Briefing</h2>
+      <div className={cn(
+        'rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden min-h-0',
+        mobilePanel === 'briefing' ? 'flex flex-col flex-1 lg:flex-none' : 'hidden lg:flex lg:flex-col',
+        'lg:min-h-[25vh]'
+      )}>
+        <div className="p-3 sm:p-5 border-b bg-muted/30 shrink-0">
+          <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <h2 className="text-lg sm:text-xl font-semibold tracking-tight">Morning Briefing</h2>
           </div>
-          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
+          <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             {new Date(briefing?.briefing?.date || Date.now()).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-5 bg-secondary/10">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5 bg-secondary/10">
           {briefingLoading ? (
             <div className="flex flex-col space-y-4 items-center justify-center h-full text-muted-foreground">
               <RefreshCw className="h-8 w-8 animate-spin text-primary/50" />
               <p className="text-sm animate-pulse">Generating your morning briefing...</p>
             </div>
           ) : briefing ? (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
 
               {/* AI Summary Section */}
               <div className="bg-background rounded-lg border shadow-sm overflow-hidden">
-                <div className="bg-primary/5 px-5 py-3 border-b border-primary/10 flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  <h3 className="font-semibold text-sm text-primary uppercase tracking-wider">Executive Summary</h3>
+                <div className="bg-primary/5 px-3 py-2 sm:px-5 sm:py-3 border-b border-primary/10 flex items-center gap-2">
+                  <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                  <h3 className="font-semibold text-xs sm:text-sm text-primary uppercase tracking-wider">Executive Summary</h3>
                 </div>
-                <div className="p-5 text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                <div className="p-3 sm:p-5 text-xs sm:text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
                   {briefing.briefing?.ai_summary}
                 </div>
               </div>
@@ -131,18 +177,18 @@ export function AIPanel() {
               {/* Trend Alerts Section */}
               {briefing.briefing?.trend_alert && briefing.briefing.trend_alert !== 'No alerts today.' && (
                 <div className="bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-900 shadow-sm overflow-hidden">
-                  <div className="bg-red-100 dark:bg-red-900/40 px-5 py-3 border-b border-red-200 dark:border-red-900 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    <h3 className="font-semibold text-sm text-red-800 dark:text-red-300 uppercase tracking-wider">Action Needed</h3>
+                  <div className="bg-red-100 dark:bg-red-900/40 px-3 py-2 sm:px-5 sm:py-3 border-b border-red-200 dark:border-red-900 flex items-center gap-2">
+                    <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600 dark:text-red-400" />
+                    <h3 className="font-semibold text-xs sm:text-sm text-red-800 dark:text-red-300 uppercase tracking-wider">Action Needed</h3>
                   </div>
-                  <div className="p-5 text-sm leading-relaxed text-red-900/90 dark:text-red-300/90 whitespace-pre-wrap">
+                  <div className="p-3 sm:p-5 text-xs sm:text-sm leading-relaxed text-red-900/90 dark:text-red-300/90 whitespace-pre-wrap">
                     {briefing.briefing.trend_alert}
                   </div>
                 </div>
               )}
             </div>
           ) : (
-             <div className="flex h-full items-center justify-center text-muted-foreground">
+             <div className="flex h-full items-center justify-center text-muted-foreground text-xs sm:text-sm">
                Unable to load briefing data today.
              </div>
           )}
@@ -150,21 +196,25 @@ export function AIPanel() {
       </div>
 
       {/* Right Column: AI Chat Interface */}
-      <div className="order-1 lg:order-2 flex flex-col rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden min-h-[52vh] sm:min-h-[50vh] lg:min-h-0">
-        <div className="p-5 border-b bg-muted/30">
+      <div className={cn(
+        'rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden min-h-0',
+        mobilePanel === 'chat' ? 'flex flex-col flex-1 lg:flex-none' : 'hidden lg:flex lg:flex-col',
+        'lg:min-h-[35vh]'
+      )}>
+        <div className="p-3 sm:p-5 border-b bg-muted/30 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold tracking-tight">AI Co-Pilot</h2>
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h2 className="text-lg sm:text-xl font-semibold tracking-tight">AI Co-Pilot</h2>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">Talk to your constituency data directly</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Talk to your constituency data directly</p>
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden bg-background">
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-5">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4 sm:space-y-5">
           {messages.length === 0 && !loading && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-start gap-3">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <span className="text-xs text-primary font-bold">AI</span>
@@ -175,12 +225,12 @@ export function AIPanel() {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 pl-11">
+              <div className="flex flex-wrap gap-2 pl-0 sm:pl-11">
                 {STARTER_CHIPS.map(chip => (
                   <button
                     key={chip.text}
                     onClick={() => handleSend(chip.text)}
-                    className="text-xs bg-card border rounded-full px-3.5 py-2 hover:bg-secondary hover:border-primary/50 transition-all text-left shadow-sm"
+                    className="text-xs sm:text-[13px] bg-card border rounded-full px-3.5 py-2 hover:bg-secondary hover:border-primary/50 transition-all text-left shadow-sm max-w-full"
                   >
                     {chip.emoji} {chip.text}
                   </button>
@@ -197,7 +247,7 @@ export function AIPanel() {
                 </div>
               )}
               <div className={cn(
-                'max-w-[85%] rounded-2xl px-4 py-3 shadow-sm',
+                'max-w-[92%] sm:max-w-[85%] rounded-2xl px-3.5 sm:px-4 py-3 shadow-sm break-words',
                 msg.role === 'user'
                   ? 'bg-primary text-primary-foreground rounded-br-none'
                   : 'bg-secondary border border-border/50 rounded-tl-none text-foreground'
@@ -213,7 +263,7 @@ export function AIPanel() {
           {loading && <TypingIndicator />}
 
           {error && (
-            <div className="flex items-start gap-3 pl-11">
+            <div className="flex items-start gap-3 pl-0 sm:pl-11">
               <div className="flex items-center gap-2 bg-destructive/10 text-destructive border border-destructive/20 rounded-xl px-4 py-3 text-sm">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{error}</span>
@@ -227,25 +277,25 @@ export function AIPanel() {
         </div>
 
         {/* Input Box */}
-        <div className="p-4 border-t bg-card shrink-0">
+        <div className="p-3 sm:p-4 border-t bg-card shrink-0">
           <div className="relative flex items-center shadow-sm rounded-xl border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
             <textarea
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Query data, draft a speech, or get insights..."
+              placeholder="Query, draft a speech, or insights..."
               disabled={loading}
               rows={1}
-              className="flex-1 resize-none bg-transparent px-4 py-3.5 text-sm focus:outline-none disabled:opacity-50 min-h-[52px] max-h-32"
+              className="flex-1 resize-none bg-transparent px-3 py-3 sm:px-4 sm:py-3.5 text-sm focus:outline-none disabled:opacity-50 min-h-[48px] sm:min-h-[52px] max-h-32"
             />
-            <div className="px-2">
+            <div className="px-1.5 sm:px-2">
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() || loading}
-                className="h-9 w-9 bg-primary text-primary-foreground rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm"
+                className="h-8 w-8 sm:h-9 sm:w-9 bg-primary text-primary-foreground rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
             </div>
           </div>

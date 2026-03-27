@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import PoliticianDashboard from "./pages/politician/Dashboard";
 import AssignWork from "./pages/politician/AssignWork";
@@ -36,6 +37,7 @@ const App = () => (
               {/* Public */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
 
               {/* Politician */}
               <Route path="/politician/dashboard" element={<ProtectedRoute requiredRole="politician"><PoliticianDashboard /></ProtectedRoute>} />
