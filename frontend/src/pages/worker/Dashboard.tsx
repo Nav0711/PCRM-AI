@@ -8,12 +8,17 @@ import { useAIChat } from '@/contexts/AIChatContext';
 import { apiClient } from '@/services/apiClient';
 import { useState, useEffect } from 'react';
 import { Task } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 // Worker dashboard shows assigned tasks and AI shortcuts tailored to worker workflows.
 
 const WorkerDashboard = () => {
   const { openChat } = useAIChat();
   const [workerTasks, setWorkerTasks] = useState<Task[]>([]);
+  const [isProposeOpen, setIsProposeOpen] = useState(false);
+  const [proposeTitle, setProposeTitle] = useState('');
+  const [proposeDesc, setProposeDesc] = useState('');
 
   useEffect(() => {
         const fetchTasks = async () => {
@@ -55,12 +60,81 @@ const WorkerDashboard = () => {
     openChat(`You are assisting a field worker. Current tasks: ${context || 'No tasks assigned.'}. ${message}`);
   };
 
+  const handleProposeSubmit = async () => {
+    if (!proposeTitle || !proposeDesc) {
+      toast.error('Please fill in both title and description');
+      return;
+    }
+    try {
+      const newCmpt = await apiClient.createComplaint({
+        citizen_phone: 'worker_0000000',
+        raw_text: `${proposeTitle}\n\n${proposeDesc}`,
+        category: 'Worker Proposal'
+      });
+      // Mark it immediately as Awaiting Approval
+      await apiClient.updateComplaint((newCmpt.data as any).id, {
+        status: 'Awaiting Approval'
+      });
+      toast.success('Proposal submitted for Politician approval!');
+      setIsProposeOpen(false);
+      setProposeTitle('');
+      setProposeDesc('');
+      // Optimistically add it to UI if needed, but the Pol side will definitely see it.
+    } catch (e) {
+      toast.error('Failed to submit proposal');
+    }
+  };
+
   return (
     <WorkerLayout>
       <div className="space-y-4">
-        <div>
-          <h1 className="text-xl font-bold">My Tasks</h1>
-          <p className="text-sm text-muted-foreground">{workerTasks.length} assigned tasks</p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-xl font-bold">My Tasks</h1>
+            <p className="text-sm text-muted-foreground">{workerTasks.length} assigned tasks</p>
+          </div>
+          
+          <Dialog open={isProposeOpen} onOpenChange={setIsProposeOpen}>
+            <DialogTrigger asChild>
+              <button className="bg-primary text-primary-foreground text-sm font-medium px-4 py-2 rounded-md hover:opacity-90 transition-opacity">
+                + Propose Work
+              </button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Propose Task for Approval</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div>
+                  <label className="text-sm font-medium">Proposal Title</label>
+                  <input
+                    type="text"
+                    value={proposeTitle}
+                    onChange={(e) => setProposeTitle(e.target.value)}
+                    placeholder="e.g. Repair damaged street light in Ward 10"
+                    className="w-full mt-1 px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Details / Justification</label>
+                  <textarea
+                    value={proposeDesc}
+                    onChange={(e) => setProposeDesc(e.target.value)}
+                    placeholder="Describe why this needs attention..."
+                    className="w-full mt-1 px-3 py-2 border rounded-md bg-background min-h-[100px] focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <button
+                  onClick={handleProposeSubmit}
+                  className="bg-primary text-primary-foreground text-sm font-medium px-4 py-2 rounded-md hover:opacity-90 transition-opacity w-full flex items-center justify-center m-0"
+                >
+                  Submit Proposal
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* AI helpers */}

@@ -1,4 +1,5 @@
 import { PublicLayout } from '@/layouts/PublicLayout';
+import { InfiniteGridHero } from '@/components/ui/infinite-grid-hero';
 import { StatCard } from '@/components/StatCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { WARDS, CATEGORIES } from '@/data/mock';
@@ -83,61 +84,23 @@ const Index = () => {
 
   return (
     <PublicLayout>
-      {/* Hero section — Indian Tricolour Gradient */}
-      <section className="relative overflow-hidden bg-background text-foreground">
-        {/* Saffron glow top-left */}
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-[#FF9933]/20 blur-[120px] pointer-events-none" />
-        {/* Green glow bottom-right */}
-        <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-[#138808]/15 blur-[120px] pointer-events-none" />
-        {/* Chakra pattern overlay */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-white/[0.03] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-white/[0.05] pointer-events-none" />
+      {/* Hero section with infinite grid background */}
+      <div className="relative">
+        <InfiniteGridHero onFileComplaint={() => setIsDialogOpen(true)} />
+        
+        {/* Bottom tricolour fade hint */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933]/30 via-blue-500/20 to-[#138808]/30" />
+      </div>
 
-        <div className="container mx-auto px-4 py-24 lg:py-36 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs font-semibold tracking-wide mb-8 animate-fade-in backdrop-blur-sm">
-              <Shield className="h-3.5 w-3.5 text-[#FF9933]" />
-              <span>PSRM-AI — Constituency Transparency Portal</span>
-            </div>
-
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight animate-fade-in leading-[1.1]">
-              Your Voice,{' '}
-              <span className="bg-gradient-to-r from-[#FF9933] via-white to-[#138808] bg-clip-text text-transparent">
-                Amplified.
-              </span>
-            </h1>
-
-            <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-white/70 animate-fade-in font-medium" style={{ animationDelay: '0.1s' }}>
-              Directly connect with your local representative. Report issues, track progress, and build a better community together.
-            </p>
-
-            <div className="animate-fade-in flex flex-col sm:flex-row items-center justify-center gap-4" style={{ animationDelay: '0.2s' }}>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="h-14 px-8 text-base font-semibold shadow-xl hover:scale-105 transition-all bg-[#FF9933] hover:bg-[#FF9933]/90 text-white rounded-xl border-0">
-                    <FileText className="mr-2 h-5 w-5" />
-                    File a Complaint
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px] glass-panel max-h-[90vh] overflow-y-auto text-foreground">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">Submit a Grievance</DialogTitle>
-                  </DialogHeader>
-                  <ComplaintForm onSuccess={() => setIsDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
-              
-              <a href="#projects" className="h-14 px-8 text-base font-semibold rounded-xl border border-white/20 text-white/90 hover:bg-white/10 transition-all flex items-center gap-2">
-                View Projects <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom tricolour fade */}
-        <div className="h-1 w-full bg-gradient-to-r from-[#FF9933]/50 via-white/20 to-[#138808]/50" />
-      </section>
+      {/* Dialog for Filing Complaint */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] glass-panel max-h-[90vh] overflow-y-auto text-foreground">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Submit a Grievance</DialogTitle>
+          </DialogHeader>
+          <ComplaintForm onSuccess={() => setIsDialogOpen(false)} />
+        </DialogContent>
+      </Dialog>
 
       {/* Stats section */}
       <section className="bg-transparent relative z-20">

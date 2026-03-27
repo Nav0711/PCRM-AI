@@ -113,6 +113,10 @@ def update_complaint(
         complaint.progress = update_data.progress
     if update_data.resolved_at:
         complaint.resolved_at = update_data.resolved_at
+    if update_data.resolution_note:
+        complaint.resolution_note = update_data.resolution_note
+    if update_data.politicianFeedback:
+        complaint.resolution_note = f"Politician Feedback: {update_data.politicianFeedback}"
         
     db.commit()
     db.refresh(complaint)

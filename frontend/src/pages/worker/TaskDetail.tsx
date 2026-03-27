@@ -129,7 +129,8 @@ const TaskDetail = () => {
     try {
       if (task.id && task.id.length > 5) {
         await apiClient.updateComplaint(task.id, {
-          status: 'Awaiting Approval'
+          status: 'Awaiting Approval',
+          resolution_note: notes
         });
       }
     } catch (err) {

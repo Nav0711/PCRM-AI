@@ -31,6 +31,7 @@ const Approvals = () => {
               id: c.id,
               title: c.ticket_id || c.id,
               description: c.summary || c.raw_text || 'No description',
+              workerNotes: c.resolution_note || null,
               ward: c.ward_id || 'Unknown',
               location: c.location || c.ward_id || 'Unknown',
               category: c.category || 'Unclassified',

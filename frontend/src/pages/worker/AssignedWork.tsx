@@ -8,10 +8,14 @@ import { useAIChat } from '@/contexts/AIChatContext';
 import { apiClient } from '@/services/apiClient';
 import { useState, useEffect } from 'react';
 import { Task } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 const AssignedWork = () => {
   const { openChat } = useAIChat();
   const [workerTasks, setWorkerTasks] = useState<Task[]>([]);
+  const [appealingTask, setAppealingTask] = useState<Task | null>(null);
+  const [appealNotes, setAppealNotes] = useState('');
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -51,6 +55,30 @@ const AssignedWork = () => {
     openChat(
       `Help me draft a concise completion approval note for task "${task.title}". Status: ${task.status}. Progress: ${task.progress}%. Location: ${task.location}. Deadline: ${task.deadline}. Mention any required proof and thank the approver.`
     );
+  };
+
+  const handleAppealSubmit = async () => {
+    if (!appealingTask) return;
+    if (!appealNotes.trim()) {
+      toast.error('Please add completion notes/proof details');
+      return;
+    }
+    try {
+      if (appealingTask.id && appealingTask.id.length > 5) {
+        await apiClient.updateComplaint(appealingTask.id, {
+          status: 'Awaiting Approval',
+          resolution_note: appealNotes
+        });
+      }
+      setWorkerTasks(prev => prev.map(t => 
+        t.id === appealingTask.id ? { ...t, status: 'awaiting-approval' } : t
+      ));
+      toast.success('Task appealed for approval successfully!');
+      setAppealingTask(null);
+      setAppealNotes('');
+    } catch (e) {
+      toast.error('Failed to submit appeal');
+    }
   };
 
   return (
@@ -100,19 +128,50 @@ const AssignedWork = () => {
                     <CheckCircle2 className="h-4 w-4" />
                     AI: Draft completion note
                   </button>
-                  <Link
-                    to={`/worker/task/${task.id}`}
-                    className="w-full border rounded-md px-3 py-2 text-sm flex items-center gap-2 hover:bg-secondary transition-colors"
+                  <button
+                    onClick={() => { setAppealingTask(task); setAppealNotes(''); }}
+                    className="w-full border rounded-md px-3 py-2 text-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors"
                   >
                     <UploadCloud className="h-4 w-4" />
-                    Add progress / proof
-                  </Link>
+                    Submit Progress / Appeal
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <Dialog open={!!appealingTask} onOpenChange={(open) => !open && setAppealingTask(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Submit Task Update / Appeal for Approval</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <label className="text-sm font-medium">Task: {appealingTask?.title}</label>
+              <textarea
+                value={appealNotes}
+                onChange={(e) => setAppealNotes(e.target.value)}
+                placeholder="Describe the work completed or updates made..."
+                className="w-full mt-2 px-3 py-2 border rounded-md bg-background min-h-[120px] focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            {/* Minimal UI for attachments, ignoring the complex generic FileUpload temporarily or could add it */}
+            <p className="text-xs text-muted-foreground mt-2">
+              By submitting this, the status will change to Awaiting Approval and your notes will be passed directly to the Politician for review.
+            </p>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={handleAppealSubmit}
+              className="bg-primary text-primary-foreground text-sm font-medium px-4 py-2 rounded-md hover:opacity-90 transition-opacity w-full flex items-center justify-center m-0"
+            >
+              Submit Appeal
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </WorkerLayout>
   );
 };

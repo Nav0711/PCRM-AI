@@ -28,8 +28,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               <Landmark className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-base font-bold leading-tight tracking-tight text-foreground">{POLITICIAN.name}</h1>
-              <p className="text-xs text-muted-foreground font-medium">{POLITICIAN.constituency}</p>
+              <h1 className="text-base font-bold leading-tight tracking-tight text-foreground">PSRM-AI</h1>
+              <p className="text-xs text-muted-foreground font-medium">Public Smart Relation Management System</p>
             </div>
           </div>
 
@@ -86,8 +86,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 <Landmark className="h-4 w-4 text-sidebar-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold">{POLITICIAN.constituency}</p>
-                <p className="text-xs opacity-60">Transparency Portal — Powered by PSRM-AI</p>
+                <p className="text-sm font-semibold">Public Smart Relation Management System</p>
+                <p className="text-xs opacity-60">PSRM-AI</p>
               </div>
             </div>
             <div className="flex items-center gap-6 text-xs font-medium opacity-60">

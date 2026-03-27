@@ -169,7 +169,7 @@ const Login = () => {
           </form>
 
           <p className="text-xs text-muted-foreground text-center mt-6">
-            Powered by PSRM-AI 🇮🇳
+            PSRM-AI — Public Smart Relation Management System with AI 🇮🇳
           </p>
         </div>
       </div>
